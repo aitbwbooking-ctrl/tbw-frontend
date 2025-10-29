@@ -1,79 +1,73 @@
 console.log("TBW FINAL WEB loaded");
 
-// API baza - povezana s Render backendom
-const API_BASE_URL = "https://tbw-backend.onrender.com";
+let API_BASE = "";
 
-const splash = document.querySelector("#app");
+async function loadConfig() {
+  try {
+    const res = await fetch("config.json");
+    const data = await res.json();
+    API_BASE = data.API_BASE_URL || "https://tbw-backend.onrender.com";
+    console.log("✅ API base:", API_BASE);
+    init();
+  } catch (err) {
+    console.error("❌ Greška pri učitavanju config.json:", err);
+  }
+}
 
 async function init() {
   const canvas = document.querySelector("canvas");
   const ctx = canvas.getContext("2d");
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
 
-  function resizeCanvas() {
+  function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
+  window.addEventListener("resize", resize);
+  resize();
 
-  const stars = Array.from({ length: 220 }, () => ({
+  const stars = Array.from({ length: 200 }).map(() => ({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
-    r: Math.random() * 1.4 + 0.8,
+    r: Math.random() * 1.2,
   }));
 
-  function loop() {
+  function drawStars() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const grad = ctx.createRadialGradient(
-      canvas.width / 2,
-      canvas.height / 2,
-      0,
-      canvas.width / 2,
-      canvas.height / 2,
-      canvas.width / 2
-    );
-    grad.addColorStop(0, "rgb(255,255,255)");
-    grad.addColorStop(1, "rgb(20,20,40)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "#aaddff";
+    ctx.fillStyle = "white";
     stars.forEach((s) => {
       ctx.beginPath();
-      ctx.ellipse(s.x, s.y, s.r, s.r, 0, 0, Math.PI * 2);
+      ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
       ctx.fill();
     });
-
-    requestAnimationFrame(loop);
+    requestAnimationFrame(drawStars);
   }
+  drawStars();
 
-  loop();
-
-  // Nakon animacije, pokreni glavni sadržaj
-  setTimeout(() => splash.classList.add("fade-out"), 2000);
-  setTimeout(() => splash.remove(), 3000);
-
-  // Primjer učitavanja podataka iz backenda
-  loadCityData("Split");
+  await loadCityData("Split");
 }
 
 async function loadCityData(city) {
   try {
-    const [weather, photos, traffic, alerts] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/weather?city=${city}`).then((r) => r.json()),
-      fetch(`${API_BASE_URL}/api/photos?q=${city}`).then((r) => r.json()),
-      fetch(`${API_BASE_URL}/api/traffic?city=${city}`).then((r) => r.json()),
-      fetch(`${API_BASE_URL}/api/alerts?city=${city}`).then((r) => r.json()),
-    ]);
+    console.log("🌆 Učitavam podatke za:", city);
 
-    console.log("🌦️ Weather:", weather);
-    console.log("📸 Photos:", photos);
-    console.log("🚗 Traffic:", traffic);
-    console.log("⚠️ Alerts:", alerts);
+    const weather = await fetchJson(`${API_BASE}/api/weather?city=${city}`);
+    const photos = await fetchJson(`${API_BASE}/api/photos?q=${city}`);
+    const traffic = await fetchJson(`${API_BASE}/api/traffic?city=${city}`);
+    const alerts = await fetchJson(`${API_BASE}/api/alerts?city=${city}`);
+
+    console.log("☀️ Vrijeme:", weather);
+    console.log("📸 Slike:", photos);
+    console.log("🚦 Promet:", traffic);
+    console.log("⚠️ Upozorenja:", alerts);
   } catch (err) {
-    console.error("Greška pri dohvaćanju podataka:", err);
+    console.error("❌ Greška pri dohvaćanju podataka:", err);
   }
 }
 
-// Pokretanje aplikacije
-init();
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+  return await res.json();
+}
+
+loadConfig();
