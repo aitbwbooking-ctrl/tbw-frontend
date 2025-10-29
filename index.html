@@ -1,46 +1,56 @@
 <!DOCTYPE html>
 <html lang="hr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TBW 2025 AI FINAL WEB</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TBW AI Concierge 2025</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top, #0a0a1a, #000);
+      color: #fff;
+      text-align: center;
+      overflow-x: hidden;
+    }
+    header {
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      font-size: 1.5em;
+      letter-spacing: 1px;
+    }
+    #content {
+      padding: 30px;
+    }
+    .section {
+      background: rgba(255,255,255,0.05);
+      margin: 15px auto;
+      border-radius: 15px;
+      padding: 20px;
+      width: 80%;
+      max-width: 700px;
+      text-align: left;
+    }
+    img.photo {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+  </style>
+</head>
+<body>
+  <header>🌍 TBW 2025 AI Concierge</header>
+  <canvas id="bg"></canvas>
 
-    <!-- ✅ Ispravljena sigurnosna politika -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="
-        default-src 'self';
-        connect-src 'self' https://tbw-backend.onrender.com https://api.openweathermap.org https://api.opentripmap.com https://api.unsplash.com https://maps.googleapis.com;
-        style-src 'self' 'unsafe-inline';
-        script-src 'self' 'unsafe-inline';
-        img-src * data:;
-      "
-    />
+  <div id="content">
+    <div class="section" id="weather"><h2>☀️ Vrijeme</h2><p>Učitavam...</p></div>
+    <div class="section" id="photos"><h2>📸 Slike</h2><p>Učitavam...</p></div>
+    <div class="section" id="traffic"><h2>🚦 Promet</h2><p>Učitavam...</p></div>
+    <div class="section" id="alerts"><h2>⚠️ Upozorenja</h2><p>Učitavam...</p></div>
+  </div>
 
-    <!-- Stil -->
-    <link rel="stylesheet" href="style.css" />
-
-    <!-- Manifest i servisni radnik -->
-    <link rel="manifest" href="manifest.json" />
-  </head>
-
-  <body>
-    <!-- Splash screen s pozadinom -->
-    <div id="app">
-      <canvas></canvas>
-      <div class="loading-text">Učitavanje podataka...</div>
-    </div>
-
-    <!-- Glavni sadržaj aplikacije -->
-    <main>
-      <section id="weather-section"></section>
-      <section id="photos-section"></section>
-      <section id="traffic-section"></section>
-      <section id="alerts-section"></section>
-    </main>
-
-    <!-- Config + JS logika -->
-    <script src="config.json" type="application/json"></script>
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
