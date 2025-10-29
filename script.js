@@ -1,73 +1,75 @@
 console.log("TBW FINAL WEB loaded");
 
-let API_BASE = "";
-
-async function loadConfig() {
-  try {
-    const res = await fetch("config.json");
-    const data = await res.json();
-    API_BASE = data.API_BASE_URL || "https://tbw-backend.onrender.com";
-    console.log("✅ API base:", API_BASE);
-    init();
-  } catch (err) {
-    console.error("❌ Greška pri učitavanju config.json:", err);
-  }
-}
-
 async function init() {
-  const canvas = document.querySelector("canvas");
-  const ctx = canvas.getContext("2d");
+  const appName = "Split";
+  const API_BASE = "https://tbw-backend.onrender.com";
 
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  window.addEventListener("resize", resize);
-  resize();
+  console.log("API base:", API_BASE);
+  console.log("Učitavam podatke za:", appName);
 
-  const stars = Array.from({ length: 200 }).map(() => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    r: Math.random() * 1.2,
-  }));
+  const weatherEl = document.getElementById("weather");
+  const photosEl = document.getElementById("photos");
+  const trafficEl = document.getElementById("traffic");
+  const alertsEl = document.getElementById("alerts");
 
-  function drawStars() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
-    stars.forEach((s) => {
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
-      ctx.fill();
-    });
-    requestAnimationFrame(drawStars);
-  }
-  drawStars();
-
-  await loadCityData("Split");
-}
-
-async function loadCityData(city) {
   try {
-    console.log("🌆 Učitavam podatke za:", city);
+    // Vrijeme
+    const weatherRes = await fetch(`${API_BASE}/api/weather?city=${appName}`);
+    const weather = await weatherRes.json();
+    console.log("Vrijeme:", weather);
 
-    const weather = await fetchJson(`${API_BASE}/api/weather?city=${city}`);
-    const photos = await fetchJson(`${API_BASE}/api/photos?q=${city}`);
-    const traffic = await fetchJson(`${API_BASE}/api/traffic?city=${city}`);
-    const alerts = await fetchJson(`${API_BASE}/api/alerts?city=${city}`);
+    if (weather.main) {
+      weatherEl.innerHTML = `
+        <h2>☀️ Vrijeme</h2>
+        <p><b>${weather.name}</b>: ${weather.weather[0].description}, ${weather.main.temp}°C</p>
+        <p>Vlažnost: ${weather.main.humidity}% | Vjetar: ${weather.wind.speed} m/s</p>
+      `;
+    } else {
+      weatherEl.innerHTML = `<p>Nema podataka o vremenu.</p>`;
+    }
 
-    console.log("☀️ Vrijeme:", weather);
-    console.log("📸 Slike:", photos);
-    console.log("🚦 Promet:", traffic);
-    console.log("⚠️ Upozorenja:", alerts);
+    // Slike
+    const photoRes = await fetch(`${API_BASE}/api/photos?q=${appName}`);
+    const photos = await photoRes.json();
+    console.log("Slike:", photos);
+
+    if (photos.results && photos.results.length > 0) {
+      photosEl.innerHTML = `<h2>📸 Slike</h2>`;
+      photos.results.slice(0, 3).forEach(p => {
+        photosEl.innerHTML += `<img class="photo" src="${p.urls.small}" alt="${p.alt_description}" />`;
+      });
+    } else {
+      photosEl.innerHTML = `<p>Nema dostupnih slika.</p>`;
+    }
+
+    // Promet
+    const trafficRes = await fetch(`${API_BASE}/api/traffic?city=${appName}`);
+    const traffic = await trafficRes.json();
+    console.log("Promet:", traffic);
+
+    trafficEl.innerHTML = `
+      <h2>🚦 Promet</h2>
+      <p>Status: ${traffic.status}</p>
+      <p>Zadnja provjera: ${new Date(traffic.last_update).toLocaleTimeString()}</p>
+    `;
+
+    // Upozorenja
+    const alertRes = await fetch(`${API_BASE}/api/alerts?city=${appName}`);
+    const alerts = await alertRes.json();
+    console.log("Upozorenja:", alerts);
+
+    if (alerts.alerts && alerts.alerts.length > 0) {
+      alertsEl.innerHTML = `<h2>⚠️ Upozorenja</h2>`;
+      alerts.alerts.forEach(a => {
+        alertsEl.innerHTML += `<p><b>${a.type.toUpperCase()}</b>: ${a.message}</p>`;
+      });
+    } else {
+      alertsEl.innerHTML = `<p>Nema aktivnih upozorenja.</p>`;
+    }
+
   } catch (err) {
-    console.error("❌ Greška pri dohvaćanju podataka:", err);
+    console.error("Greška pri dohvaćanju:", err);
   }
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
-  return await res.json();
-}
-
-loadConfig();
+init();
