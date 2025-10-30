@@ -2,57 +2,96 @@
 <html lang="hr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TBW AI Concierge</title>
+
+  <!-- CSP – dozvoli backend + API-je -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    connect-src 'self' https://tbw-backend.onrender.com https://api.openweathermap.org https://api.unsplash.com https://api.opentripmap.com;
+    img-src * data: blob:;
+    style-src 'self' 'unsafe-inline';
+    script-src 'self' 'unsafe-inline';
+    media-src * data:;
+  ">
 
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="/assets/TBW.png">
   <link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
-  <!-- 🔷 SPLASH SCREEN -->
+  <!-- SPLASH (5s) -->
   <div id="splash">
-    <h1>TBW AI Concierge</h1>
+    <div class="stars"></div>
+    <div class="splash-content">
+      <img src="/assets/TBW.png" alt="TBW Logo" class="splash-logo">
+      <h1>TBW AI Concierge</h1>
+    </div>
   </div>
 
-  <!-- ✨ ZVJEZDANA POZADINA -->
-  <div class="stars"></div>
+  <!-- AUDIO -->
+  <audio id="bg-audio" src="/assets/gentle-ocean-waves-birdsong-and-gull-7109.mp3" loop></audio>
 
-  <!-- 🔍 TRAŽILICA -->
+  <!-- HEADER + SEARCH -->
   <header>
     <h2>AI Concierge – Vaš glasovni turistički vodič</h2>
     <div id="search-box">
-      <input type="text" id="cityInput" placeholder="Upišite grad ili lokaciju..." />
+      <input type="text" id="cityInput" placeholder="Upišite grad ili lokaciju…" />
       <button id="searchBtn">Traži</button>
-      <button id="micBtn">🎤</button>
-      <button id="navBtn">🗺️ Navigacija</button>
+      <button id="micBtn" title="Glasovno pretraživanje">🎤</button>
+      <button id="navBtn" title="Navigacija do unosa">🗺️ Navigacija</button>
     </div>
   </header>
 
-  <!-- 🌦️ SEKCIJA VREMENA -->
+  <!-- SEKCIJE -->
   <section id="weather">
     <h2>Vrijeme</h2>
-    <p>Ovdje će se prikazati trenutne vremenske informacije.</p>
+    <div id="weatherData">Unesite grad za prikaz podataka.</div>
   </section>
 
-  <!-- 🖼️ SEKCIJA FOTOGRAFIJA -->
   <section id="photos">
     <h2>Slike lokacije</h2>
-    <div id="photo-container">
-      <img src="/assets/TBW.png" alt="TBW" class="photo">
-    </div>
+    <div id="photo-container"></div>
   </section>
 
-  <!-- 🚗 SEKCIJA NAVIGACIJE -->
+  <section id="attractions">
+    <h2>Znamenitosti</h2>
+    <div id="attractions-list"></div>
+  </section>
+
   <section id="navigation">
     <h2>Navigacija</h2>
-    <p>Unesite ili izgovorite grad, pa kliknite <b>Navigacija</b> za pokretanje karte.</p>
+    <p>Klik na znamenitost otvara rutu u Google Maps. Naredba: “Povedi me do …”.</p>
   </section>
 
-  <!-- 🔔 TRAKA OBAVIJESTI -->
-  <div id="notif-bar">🕒 Učitavam podatke...</div>
+  <!-- TRAKA OBAVIJESTI -->
+  <div id="notif-bar">🕒 TBW se pokreće…</div>
 
+  <!-- SCRIPTS -->
   <script src="/script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(()=>console.log('SW registriran'))
+        .catch(e=>console.warn('SW error', e));
+    }
+  </script>
+
+  <!-- Install prompt -->
+  <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.createElement('button');
+      btn.className='install-btn';
+      btn.textContent='📲 Dodaj TBW AI Concierge';
+      document.body.appendChild(btn);
+      btn.addEventListener('click', async () => {
+        btn.remove(); deferredPrompt.prompt();
+        await deferredPrompt.userChoice; deferredPrompt=null;
+      });
+    });
+  </script>
 </body>
 </html>
