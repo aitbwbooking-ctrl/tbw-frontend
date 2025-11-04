@@ -1,19 +1,42 @@
-const CACHE_NAME = "tbw-ai-v6";
+const CACHE_NAME = "tbw-ai-cache-v1";
 const ASSETS = [
-  "/", "/index.html", "/style.css", "/script.js",
-  "/assets/TBW.png",
-  "/assets/gentle-ocean-waves-birdsong-and-gull-7109.mp3",
-  "/manifest.json"
+  "/",
+  "/index.html",
+  "/styles.css",
+  "/app.js",
+  "/sw.js",
+  "/assets/icons/icon_192.png",
+  "/assets/icons/icon_512.png",
+  "/assets/audio/intro.mp3"
 ];
 
-self.addEventListener("install", e=>{
-  e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS)));
+// Install
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  );
   self.skipWaiting();
 });
-self.addEventListener("activate", e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));
+
+// Activate
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      )
+    )
+  );
   self.clients.claim();
 });
-self.addEventListener("fetch", e=>{
-  e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request)));
+
+// Fetch
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(res => 
+      res || fetch(event.request)
+    )
+  );
 });
