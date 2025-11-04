@@ -1,33 +1,36 @@
 body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  background: #00081F;
+  background: #00152b;
   color: white;
+  font-family: Arial;
   text-align: center;
 }
 
 .container {
-  margin-top: 15vh;
+  margin-top: 80px;
 }
 
 .logo {
-  width: 180px;
-  height: auto;
-  margin-bottom: 20px;
+  width: 150px;
 }
 
 button {
-  background: #FFD700;
-  color: black;
-  border: none;
-  padding: 15px 25px;
-  font-size: 18px;
+  background: gold;
+  padding: 12px 24px;
   border-radius: 8px;
+  border: none;
   cursor: pointer;
-  transition: 0.2s ease;
+  font-size: 18px;
 }
 
-button:hover {
-  background: #FFA500;
+#messages {
+  text-align: left;
+  width: 90%;
+  margin: auto;
+  margin-top: 15px;
+  background: rgba(255,255,255,0.1);
+  padding: 10px;
+  border-radius: 10px;
 }
+
+.user { margin-bottom: 10px; color: #ffd700; }
+.bot { margin-bottom: 10px; color: #4eeaff; }
