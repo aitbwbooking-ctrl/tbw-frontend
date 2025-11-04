@@ -1,23 +1,27 @@
-// Play intro sound on load
+// Play intro sound automatically
 window.addEventListener("load", () => {
-  const audio = new Audio("/assets/sounds/intro.mp3");
-  audio.volume = 0.4;
-  audio.play().catch(() => console.log("Autoplay blocked — user must tap screen first"));
+    const audio = new Audio("./assets/sounds/intro.mp3");
+    
+    audio.volume = 0.6;
+    
+    // Play when user interacts (mobile browsers block autoplay)
+    const tryPlay = () => {
+        audio.play().catch(() => {});
+        document.removeEventListener("click", tryPlay);
+        document.removeEventListener("touchstart", tryPlay);
+    };
+
+    audio.play().catch(() => {
+        document.addEventListener("click", tryPlay);
+        document.addEventListener("touchstart", tryPlay);
+    });
 });
 
-// Main chat function (placeholder for AI)
-async function sendMessage() {
-  const input = document.getElementById("userInput").value;
-  if (!input) return;
-
-  const chatBox = document.getElementById("chatBox");
-  chatBox.innerHTML += `<div class="user">👤 ${input}</div>`;
-
-  // Fake AI reply for now
-  setTimeout(() => {
-    chatBox.innerHTML += `<div class="ai">🤖 Hello! AI responding soon...</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }, 600);
-
-  document.getElementById("userInput").value = "";
+// Register service worker
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+            .then(reg => console.log("✅ Service Worker registered:", reg.scope))
+            .catch(err => console.log("❌ Service Worker error:", err));
+    });
 }
