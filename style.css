@@ -1,48 +1,33 @@
-/* GLOBAL */
-*{box-sizing:border-box}
-body{margin:0;font-family:'Segoe UI',system-ui,Roboto,Arial;background:#0a0f18;color:#fff;text-align:center;overflow-x:hidden}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #00081F;
+  color: white;
+  text-align: center;
+}
 
-/* SPLASH */
-#splash{position:fixed;inset:0;background:radial-gradient(ellipse at bottom,#0d1b2a,#000);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;animation:fadeOut 1s ease 5s forwards}
-@keyframes fadeOut{to{opacity:0;visibility:hidden}}
-.stars{position:absolute;width:2px;height:2px;background:transparent;box-shadow:
-  100px 200px #fff,200px 300px #fff,300px 100px #fff,400px 150px #fff,
-  500px 250px #fff,600px 350px #fff,700px 400px #fff,800px 200px #fff,900px 150px #fff;
-animation:starMove 6s linear infinite}
-@keyframes starMove{from{transform:translateY(0);opacity:1}to{transform:translateY(-200px);opacity:0}}
-.splash-content{animation:comet 5s ease-in-out forwards;position:relative}
-@keyframes comet{0%{transform:translateX(-120%) translateY(-50%) scale(.5);opacity:0}
-50%{transform:translateX(20%) translateY(-10%) scale(1.2);opacity:1}
-80%{transform:translateX(60%) translateY(20%) scale(.8)}100%{transform:translateX(0) scale(1);opacity:0}}
-.splash-logo{width:120px;height:120px;border-radius:20px;animation:glow 2s ease-in-out infinite alternate}
-@keyframes glow{from{box-shadow:0 0 10px #ffd700}to{box-shadow:0 0 40px #ffcc00}}
+.container {
+  margin-top: 15vh;
+}
 
-/* HEADER + SEARCH */
-header{margin-top:6rem}
-#search-box{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:15px;flex-wrap:wrap}
-#cityInput{padding:10px;border-radius:25px;border:1px solid #2b5f8a;width:60%;max-width:420px;background:#0f1622;color:#fff;font-size:16px;outline:none}
-#searchBtn,#micBtn,#navBtn{background:linear-gradient(135deg,#00a2ff,#0066ff);border:none;border-radius:50px;padding:10px 16px;cursor:pointer;color:#fff;font-weight:700;transition:.2s}
-#searchBtn:hover,#micBtn:hover,#navBtn:hover{transform:scale(1.06);filter:brightness(1.1)}
+.logo {
+  width: 180px;
+  height: auto;
+  margin-bottom: 20px;
+}
 
-/* SEKCIJE */
-section{margin:20px auto;width:92%;max-width:900px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:18px;box-shadow:0 0 18px rgba(0,255,255,.15);text-align:left}
-h2{color:#33bfff;margin:0 0 10px}
+button {
+  background: #FFD700;
+  color: black;
+  border: none;
+  padding: 15px 25px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
 
-/* FOTKE */
-#photo-container{display:flex;flex-wrap:wrap;gap:8px}
-.photo{width:32%;min-width:160px;aspect-ratio:4/3;border-radius:10px;object-fit:cover;transition:transform .3s}
-.photo:hover{transform:scale(1.05)}
-
-/* ZNAMENITOSTI */
-.attraction{padding:10px;margin:10px 0;border-radius:10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);cursor:pointer}
-.attraction:hover{background:rgba(0,0,0,.35)}
-.attraction h4{margin:0 0 6px;color:#ffd45a}
-
-/* TRAKA */
-#notif-bar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(90deg,#00a2ff,#0066ff);color:#fff;font-weight:700;padding:10px;text-align:center;z-index:999;}
-
-/* INSTALL BTN */
-.install-btn{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ffd45a,#ff9e2e);color:#000;border:none;border-radius:20px;padding:10px 16px;font-weight:800;cursor:pointer;z-index:998}
-
-/* RESPONSIVE */
-@media(max-width:768px){header{margin-top:4.5rem}#cityInput{width:75%}.photo{width:48%}}
+button:hover {
+  background: #FFA500;
+}
