@@ -1,27 +1,22 @@
-// Play intro sound automatically
-window.addEventListener("load", () => {
-    const audio = new Audio("./assets/sounds/intro.mp3");
-    
-    audio.volume = 0.6;
-    
-    // Play when user interacts (mobile browsers block autoplay)
-    const tryPlay = () => {
-        audio.play().catch(() => {});
-        document.removeEventListener("click", tryPlay);
-        document.removeEventListener("touchstart", tryPlay);
-    };
+function startApp() {
+  console.log("App started");
 
-    audio.play().catch(() => {
-        document.addEventListener("click", tryPlay);
-        document.addEventListener("touchstart", tryPlay);
-    });
-});
+  document.getElementById("startBtn").style.display = "none";
+  document.getElementById("chatBox").style.display = "block";
+  document.getElementById("assistantInput").focus();
+}
 
-// Register service worker
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js")
-            .then(reg => console.log("✅ Service Worker registered:", reg.scope))
-            .catch(err => console.log("❌ Service Worker error:", err));
-    });
+function sendMessage() {
+  const input = document.getElementById("assistantInput");
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const box = document.getElementById("messages");
+  box.innerHTML += `<div class="user">🧑‍💼 ${msg}</div>`;
+  input.value = "";
+
+  // Simulacija AI odgovora
+  setTimeout(() => {
+    box.innerHTML += `<div class="bot">🤖 Hvala na pitanju, još nisam spojen na backend.</div>`;
+  }, 700);
 }
