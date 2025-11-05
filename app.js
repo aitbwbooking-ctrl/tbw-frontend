@@ -1,12 +1,13 @@
+const API_URL = "https://tbw-backend.onrender.com/api/chat";
+
 function startApp() {
   console.log("App started");
-
   document.getElementById("startBtn").style.display = "none";
   document.getElementById("chatBox").style.display = "block";
   document.getElementById("assistantInput").focus();
 }
 
-function sendMessage() {
+async function sendMessage() {
   const input = document.getElementById("assistantInput");
   const msg = input.value.trim();
   if (!msg) return;
@@ -15,8 +16,19 @@ function sendMessage() {
   box.innerHTML += `<div class="user">🧑‍💼 ${msg}</div>`;
   input.value = "";
 
-  // Simulacija AI odgovora
-  setTimeout(() => {
-    box.innerHTML += `<div class="bot">🤖 Hvala na pitanju, još nisam spojen na backend.</div>`;
-  }, 700);
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg }),
+    });
+
+    const data = await response.json();
+
+    box.innerHTML += `<div class="bot">🤖 ${
+      data.reply || "Backend se javio, ali nema odgovora."
+    }</div>`;
+  } catch (error) {
+    box.innerHTML += `<div class="bot">❌ Backend offline — čekam da se probudi.</div>`;
+  }
 }
