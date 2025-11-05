@@ -1,42 +1,70 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TBW AI Concierge</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+<title>TBW AI Concierge</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/style.css">
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js");
-      });
-    }
-  </script>
+<!-- Ikona aplikacije -->
+<link rel="icon" type="image/png" href="/assets/icons/icon_192.png">
+
+<!-- OS Theme -->
+<meta name="theme-color" content="#001F3F">
+
 </head>
-
 <body>
 
-  <div class="container">
-    <img src="/assets/TBW.png" alt="TBW Logo" class="logo" />
-    
+<div class="app-container">
+    <img src="/assets/TBW.png" alt="TBW Logo" class="app-logo">
+
     <h1>TBW AI Concierge</h1>
 
-    <button id="startBtn" onclick="startApp()">START</button>
+    <!-- Start gumb -->
+    <button id="startBtn" onclick="startApp()">Start</button>
 
+    <!-- Chat Box -->
     <div id="chatBox" style="display:none;">
-      <div id="messages"></div>
-      <input id="assistantInput" placeholder="Upiši pitanje..." />
-      <button onclick="sendMessage()">Pošalji</button>
+        <div id="messages" class="messages"></div>
+
+        <div class="input-area">
+            <input id="assistantInput"
+                   type="text"
+                   placeholder="Upiši poruku..."
+                   onkeydown="if(event.key === 'Enter') sendMessage();">
+            <button onclick="sendMessage()">Pošalji</button>
+        </div>
     </div>
-  </div>
+</div>
 
-  <audio id="introAudio" autoplay>
-      <source src="/assets/sounds/intro.mp3" type="audio/mpeg">
-  </audio>
+<!-- Intro zvuk -->
+<audio id="introSound">
+    <source src="/assets/sounds/intro.mp3" type="audio/mpeg">
+</audio>
 
-  <script src="app.js"></script>
+<script src="/app.js"></script>
+
+<!-- Service Worker -->
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+        .then(() => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("SW error:", err));
+    });
+}
+</script>
+
+<script>
+// pusti zvuk kad klikne Start
+document.getElementById("startBtn").addEventListener("click", () => {
+    const s = document.getElementById("introSound");
+    s.currentTime = 0;
+    s.play().catch(() => {});
+});
+</script>
+
 </body>
 </html>
