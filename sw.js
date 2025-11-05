@@ -1,42 +1,46 @@
-const CACHE_NAME = "tbw-ai-cache-v1";
+const CACHE_NAME = "tbw-cache-v3";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css",
+  "/style.css",
   "/app.js",
-  "/sw.js",
   "/assets/icons/icon_192.png",
   "/assets/icons/icon_512.png",
-  "/assets/audio/intro.mp3"
+  "/assets/TBW.png",
+  "/assets/sounds/intro.mp3"
 ];
 
-// Install
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
-  );
+self.addEventListener("install", (event) => {
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // sigurno dodavanje bez pucanja na 404
+      await Promise.allSettled(
+        ASSETS.map(u => cache.add(u).catch(() => {}))
+      );
+    })
+  );
 });
 
-// Activate
-self.addEventListener("activate", event => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      )
+      Promise.all(keys.map(k => (k === CACHE_NAME ? null : caches.delete(k))))
     )
   );
   self.clients.claim();
 });
 
-// Fetch
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(res => 
-      res || fetch(event.request)
-    )
-  );
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  // network-first za HTML, cache-first za ostalo
+  if (req.headers.get("accept")?.includes("text/html")) {
+    event.respondWith(
+      fetch(req).catch(() => caches.match("/index.html"))
+    );
+  } else {
+    event.respondWith(
+      caches.match(req).then(cached => cached || fetch(req))
+    );
+  }
 });
