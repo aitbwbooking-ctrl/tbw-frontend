@@ -1,69 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TBW AI Concierge</title>
 
-<title>TBW AI Concierge</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/style.css" />
 
-<!-- Ikona aplikacije -->
-<link rel="icon" type="image/png" href="/assets/icons/icon_192.png">
-
-<!-- OS Theme -->
-<meta name="theme-color" content="#001F3F">
-
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
-<div class="app-container">
-    <img src="/assets/TBW.png" alt="TBW Logo" class="app-logo">
+<header class="topbar">
+  <img src="/assets/TBW.png" class="logo" alt="">
+  <h1>TBW AI Concierge</h1>
+</header>
 
-    <h1>TBW AI Concierge</h1>
-
-    <!-- Start gumb -->
-    <button id="startBtn" onclick="startApp()">Start</button>
-
-    <!-- Chat Box -->
-    <div id="chatBox" style="display:none;">
-        <div id="messages" class="messages"></div>
-
-        <div class="input-area">
-            <input id="assistantInput"
-                   type="text"
-                   placeholder="Upiši poruku..."
-                   onkeydown="if(event.key === 'Enter') sendMessage();">
-            <button onclick="sendMessage()">Pošalji</button>
-        </div>
-    </div>
+<div class="search">
+  <input id="cityInput" placeholder="Upiši grad (npr. Split)" />
+  <button onclick="loadDashboard()">Traži</button>
+  <span id="statusBadge">●</span>
 </div>
 
-<!-- Intro zvuk -->
-<audio id="introSound">
-    <source src="/assets/sounds/intro.mp3" type="audio/mpeg">
-</audio>
+<main class="grid">
 
+<!-- Vrijeme -->
+<div class="card">
+  <h2>Vrijeme</h2>
+  <div id="weatherBox">Upiši grad iznad…</div>
+</div>
+
+<!-- Fotke -->
+<div class="card">
+  <h2>Fotografije</h2>
+  <div id="photos" class="photos"></div>
+</div>
+
+<!-- POI -->
+<div class="card">
+  <h2>Znamenitosti</h2>
+  <ul id="poiList"></ul>
+</div>
+
+<!-- Karta -->
+<div class="card map">
+  <h2>Karta</h2>
+  <div id="map" style="height:300px;border-radius:10px;"></div>
+</div>
+
+<!-- Chat -->
+<div class="card">
+  <h2>Chat asistent</h2>
+  <div id="messages"></div>
+  <input id="assistantInput" placeholder="Pitaj nešto…" />
+  <button onclick="sendMessage()">Pošalji</button>
+</div>
+
+</main>
+
+<audio id="introSound" src="/assets/sounds/intro.mp3" preload="auto"></audio>
 <script src="/app.js"></script>
 
-<!-- Service Worker -->
 <script>
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js")
-        .then(() => console.log("✅ Service Worker registered"))
-        .catch(err => console.error("SW error:", err));
-    });
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
 }
-</script>
-
-<script>
-// pusti zvuk kad klikne Start
-document.getElementById("startBtn").addEventListener("click", () => {
-    const s = document.getElementById("introSound");
-    s.currentTime = 0;
-    s.play().catch(() => {});
-});
 </script>
 
 </body>
