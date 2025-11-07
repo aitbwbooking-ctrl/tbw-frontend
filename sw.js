@@ -1,46 +1,37 @@
-const CACHE_NAME = "tbw-cache-v3";
+const CACHE = "tbw-v2";
 const ASSETS = [
   "/",
   "/index.html",
   "/style.css",
   "/app.js",
+  "/assets/TBW.png",
   "/assets/icons/icon_192.png",
   "/assets/icons/icon_512.png",
-  "/assets/TBW.png",
-  "/assets/sounds/intro.mp3"
+  "/assets/sounds/intro.mp3",
 ];
 
-self.addEventListener("install", (event) => {
+self.addEventListener("install", (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      // sigurno dodavanje bez pucanja na 404
-      await Promise.allSettled(
-        ASSETS.map(u => cache.add(u).catch(() => {}))
-      );
-    })
-  );
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k === CACHE_NAME ? null : caches.delete(k))))
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  // network-first za HTML, cache-first za ostalo
-  if (req.headers.get("accept")?.includes("text/html")) {
-    event.respondWith(
-      fetch(req).catch(() => caches.match("/index.html"))
-    );
+self.addEventListener("fetch", (e) => {
+  const url = new URL(e.request.url);
+  // network-first for API, cache-first for static
+  if (url.pathname.startsWith("/api/")) {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
   } else {
-    event.respondWith(
-      caches.match(req).then(cached => cached || fetch(req))
+    e.respondWith(
+      caches.match(e.request).then((r) => r || fetch(e.request))
     );
   }
 });
