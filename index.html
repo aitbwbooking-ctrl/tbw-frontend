@@ -1,135 +1,139 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TBW AI PREMIUM</title>
+
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" href="/assets/icons/icon_192.png" />
+  <meta name="theme-color" content="#001a28" />
+  <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
-  <meta name="theme-color" content="#061826" />
+
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- ALERT TRAKA -->
-  <div id="alertBar">
-    <div class="brand">TBW AI PREMIUM</div>
-    <div class="alertsLine">
-      <span>Prometna upozorenja</span>
-      <span>•</span>
-      <span>Vrijeme</span>
-      <span>•</span>
-      <span>Stanje mora</span>
-      <span>•</span>
-      <span>Nesreće</span>
-      <span>•</span>
-      <span>Rezervacije</span>
-      <span>•</span>
-      <span>Alert !</span>
+  <!-- Intro overlay (5 sek) -->
+  <div id="introOverlay" class="intro">
+    <div class="intro-inner">
+      <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
+      <div class="intro-title">TBW AI PREMIUM</div>
+      <div class="intro-sub">Smart Concierge • Hrvatska</div>
+      <button id="skipIntro" class="btn ghost">Preskoči</button>
+    </div>
+    <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
+  </div>
+
+  <!-- Top alert traka -->
+  <div id="topBar" class="topbar">
+    <div class="topbar-inner">
+      <strong>Prometna upozorenja • Vrijeme • Stanje mora • Nesreće • Rezervacije • Alert!</strong>
+      <span id="alertsTicker" class="ticker"></span>
     </div>
   </div>
 
-  <!-- LOGO + SEARCH -->
-  <header class="hero">
-    <img src="/assets/TBW.png" alt="TBW" class="logoBadge" />
-    <div class="searchWrap">
-      <input id="cityInput" type="text" placeholder="Split apartmani" />
-      <button id="goBtn">Traži</button>
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <img src="/assets/TBW.png" alt="TBW" />
+      <h1>TBW AI PREMIUM</h1>
+    </div>
+    <div class="search">
+      <input id="cityInput" type="text" placeholder="Split, Zadar, Zagreb…" />
+      <button id="askBtn" class="btn">Traži</button>
+      <span id="backendDot" class="dot" title="Backend status"></span>
     </div>
   </header>
 
-  <!-- MREŽA KARTICA (točno raspored kao na slici) -->
+  <!-- Grid -->
   <main class="grid">
     <!-- Navigacija -->
-    <section class="card card--tall" id="navCard">
-      <h3>Navigacija</h3>
-      <div id="navMap" class="mapBox"></div>
-      <div class="mini-note" id="navNote"></div>
+    <section class="card">
+      <h2>Navigacija</h2>
+      <div id="navMap" class="map"></div>
+      <div class="row gap">
+        <input id="routeFrom" class="input" placeholder="Polazište (opcionalno)" />
+        <input id="routeTo" class="input" placeholder="Odredište" />
+        <button id="routeBtn" class="btn sm">Rutu</button>
+      </div>
     </section>
 
     <!-- Rezervacija smještaja -->
-    <section class="card card--tall" id="bookingCard">
-      <h3>Rezervacija smještaja</h3>
-      <div class="formRow">
-        <label>Lokacija</label>
-        <input id="bkCity" type="text" placeholder="Split" />
-      </div>
-      <div class="formRow two">
-        <div>
+    <section class="card">
+      <h2>Rezervacija smještaja</h2>
+      <div class="row gap">
+        <div class="col">
+          <label>Lokacija</label>
+          <input id="hotelCity" class="input" placeholder="Split" />
+        </div>
+        <div class="col">
           <label>Dolazak</label>
-          <input id="bkArrive" type="date" />
+          <input id="arrive" class="input" type="date" />
         </div>
-        <div>
+        <div class="col">
           <label>Odlazak</label>
-          <input id="bkLeave" type="date" />
+          <input id="depart" class="input" type="date" />
         </div>
-      </div>
-      <div class="formRow two">
-        <div>
-          <label>Cijena (€/noć)</label>
-          <input id="bkPrice" type="number" min="10" step="5" value="60" />
-        </div>
-        <div>
+        <div class="col">
           <label>Gosti</label>
-          <select id="bkGuests">
-            <option>1 osoba</option><option selected>2 osobe</option>
-            <option>3 osobe</option><option>4 osobe</option>
-          </select>
+          <input id="guests" class="input" type="number" min="1" value="2" />
         </div>
       </div>
-      <div class="chips" id="bkChips">
-        <span>⭐ 17/5</span><span>🚗 Parking</span><span>🍳 Doručak</span><span>⌚ Kasni check-in</span>
+      <div class="row between">
+        <div class="tags">
+          <span>🚘 Parking</span><span>🍳 Doručak</span><span>👨‍👩‍👧‍👦 Obitelj</span>
+        </div>
+        <button id="bookBtn" class="btn">Pretraži</button>
       </div>
-      <div class="priceLine"><span id="bkPriceShow">60 € po noći</span><button id="bkBtn">Rezerviraj</button></div>
+      <div id="hotelResults" class="list"></div>
     </section>
 
     <!-- Street View -->
-    <section class="card card--tall" id="streetCard">
-      <h3>Street View</h3>
-      <img id="streetImg" class="streetImg" alt="Street view" />
-      <div class="mini-note" id="streetNote"></div>
+    <section class="card">
+      <h2>Street View</h2>
+      <div id="streetView" class="street"></div>
     </section>
 
     <!-- Vrijeme -->
-    <section class="card" id="weatherCard">
-      <h3>Vrijeme</h3>
-      <div class="weatherWrap">
-        <div class="wIcon">🌧️</div>
-        <div>
-          <div class="wTemp" id="wTemp">—</div>
-          <div class="wSub" id="wDesc">—</div>
-        </div>
-      </div>
-      <div class="mini-note" id="weatherNote"></div>
+    <section class="card">
+      <h2>Vrijeme</h2>
+      <div id="weatherBox" class="weather"></div>
     </section>
 
     <!-- Promet uživo -->
-    <section class="card" id="trafficCard">
-      <h3>Promet uživo</h3>
-      <div id="trafficMap" class="mapBox small"></div>
-      <div class="mini-note" id="trafficNote"></div>
+    <section class="card">
+      <h2>Promet uživo</h2>
+      <div id="trafficMap" class="map"></div>
     </section>
 
     <!-- Stanje mora -->
-    <section class="card" id="seaCard">
-      <h3>Stanje mora</h3>
-      <div class="seaWrap">
-        <div class="seaTemp" id="seaTemp">— °C</div>
-        <div class="seaMeta" id="seaMeta">H —</div>
-      </div>
-      <div class="seaThumbs" id="seaThumbs"></div>
+    <section class="card">
+      <h2>Stanje mora</h2>
+      <div id="seaBox" class="sea"></div>
+    </section>
+
+    <!-- Znamenitosti -->
+    <section class="card">
+      <h2>Znamenitosti</h2>
+      <div id="poiBox" class="poi"></div>
+    </section>
+
+    <!-- Karta (pregled) -->
+    <section class="card">
+      <h2>Karta</h2>
+      <div id="miniMap" class="map"></div>
     </section>
   </main>
 
-  <!-- AUDIO intro -->
-  <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
+  <!-- AI chat (dno) -->
+  <footer class="footer">
+    <div class="chat">
+      <input id="assistantInput" class="input" placeholder="Postavi pitanje (npr. najbolja plaža u Splitu)..." />
+      <button id="sendBtn" class="btn">Pošalji</button>
+    </div>
+    <div id="messages" class="messages"></div>
+  </footer>
 
   <script src="/app.js" defer></script>
-  <script>
-    // SW registracija
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
-    }
-  </script>
 </body>
 </html>
