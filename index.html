@@ -1,3 +1,4 @@
+<!-- redeploy-fix-1 -->
 <!doctype html>
 <html lang="hr">
 <head>
@@ -5,14 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TBW AI PREMIUM</title>
 
-  <meta name="theme-color" content="#001a28" />
   <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#001a28" />
   <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
-  <link rel="stylesheet" href="/style.css?v=6" />
+
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- Intro (5s) -->
+  <!-- Intro overlay (5 sec) -->
   <div id="introOverlay" class="intro">
     <div class="intro-inner">
       <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
@@ -23,10 +25,10 @@
     <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
   </div>
 
-  <!-- Gornja traka upozorenja -->
+  <!-- Alert ticker -->
   <div id="topBar" class="topbar">
     <div class="topbar-inner">
-      <strong>Prometna upozorenja • Vrijeme • Stanje mora • Nesreće • Rezervacije • Alert!</strong>
+      <strong id="alertLabel">Live Alerts:</strong>
       <span id="alertsTicker" class="ticker"></span>
     </div>
   </div>
@@ -38,15 +40,15 @@
       <h1>TBW AI PREMIUM</h1>
     </div>
     <div class="search">
-      <input id="cityInput" class="input" type="text" placeholder="Split, Zadar, Zagreb…" />
+      <input id="cityInput" type="text" placeholder="Split, Zagreb…" />
       <button id="askBtn" class="btn">Traži</button>
       <span id="backendDot" class="dot" title="Backend status"></span>
     </div>
   </header>
 
-  <!-- Grid sekcije -->
+  <!-- GRID -->
   <main class="grid">
-    <!-- Navigacija -->
+    <!-- Navigation -->
     <section class="card">
       <h2>Navigacija</h2>
       <div id="navMap" class="map"></div>
@@ -57,7 +59,7 @@
       </div>
     </section>
 
-    <!-- Rezervacija smještaja -->
+    <!-- Hotels -->
     <section class="card">
       <h2>Rezervacija smještaja</h2>
       <div class="row gap">
@@ -67,15 +69,15 @@
         </div>
         <div class="col">
           <label>Dolazak</label>
-          <input id="arrive" class="input" type="date" />
+          <input id="arrive" type="date" class="input" />
         </div>
         <div class="col">
           <label>Odlazak</label>
-          <input id="depart" class="input" type="date" />
+          <input id="depart" type="date" class="input" />
         </div>
         <div class="col">
           <label>Gosti</label>
-          <input id="guests" class="input" type="number" min="1" value="2" />
+          <input id="guests" type="number" value="2" min="1" class="input" />
         </div>
       </div>
       <div class="row between">
@@ -93,46 +95,46 @@
       <div id="streetView" class="street"></div>
     </section>
 
-    <!-- Vrijeme -->
+    <!-- Weather -->
     <section class="card">
       <h2>Vrijeme</h2>
       <div id="weatherBox" class="weather"></div>
     </section>
 
-    <!-- Promet uživo -->
+    <!-- Traffic -->
     <section class="card">
       <h2>Promet uživo</h2>
       <div id="trafficMap" class="map"></div>
     </section>
 
-    <!-- Stanje mora -->
+    <!-- Sea -->
     <section class="card">
       <h2>Stanje mora</h2>
       <div id="seaBox" class="sea"></div>
     </section>
 
-    <!-- Znamenitosti -->
+    <!-- POI -->
     <section class="card">
       <h2>Znamenitosti</h2>
       <div id="poiBox" class="poi"></div>
     </section>
 
-    <!-- Karta pregled -->
+    <!-- Mini Map -->
     <section class="card">
       <h2>Karta</h2>
       <div id="miniMap" class="map"></div>
     </section>
   </main>
 
-  <!-- AI chat na dnu -->
+  <!-- Chat -->
   <footer class="footer">
     <div class="chat">
-      <input id="assistantInput" class="input" placeholder="Postavi pitanje (npr. najbolja plaža u Splitu)..." />
+      <input id="assistantInput" class="input" placeholder="Postavi pitanje…" />
       <button id="sendBtn" class="btn">Pošalji</button>
     </div>
     <div id="messages" class="messages"></div>
   </footer>
 
-  <script src="/app.js?v=6" defer></script>
+  <script src="/app.js" defer></script>
 </body>
 </html>
