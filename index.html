@@ -9,12 +9,11 @@
   <meta name="theme-color" content="#001a28" />
   <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
-
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- Intro overlay (5 sek) -->
-  <div id="introOverlay" class="intro">
+  <!-- 5s intro overlay -->
+  <div id="introOverlay" class="intro is-visible">
     <div class="intro-inner">
       <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
       <div class="intro-title">TBW AI PREMIUM</div>
@@ -45,7 +44,7 @@
     </div>
   </header>
 
-  <!-- Grid -->
+  <!-- GRID 3x3 -->
   <main class="grid">
     <!-- Navigacija -->
     <section class="card">
@@ -58,7 +57,7 @@
       </div>
     </section>
 
-    <!-- Rezervacija smještaja -->
+    <!-- Rezervacija -->
     <section class="card">
       <h2>Rezervacija smještaja</h2>
       <div class="row gap">
@@ -125,7 +124,7 @@
     </section>
   </main>
 
-  <!-- AI chat (dno) -->
+  <!-- AI chat -->
   <footer class="footer">
     <div class="chat">
       <input id="assistantInput" class="input" placeholder="Postavi pitanje (npr. najbolja plaža u Splitu)..." />
@@ -133,6 +132,16 @@
     </div>
     <div id="messages" class="messages"></div>
   </footer>
+
+  <!-- ALERT MODAL + zvuk -->
+  <div id="alertModal" class="alert-modal">
+    <div class="alert-box">
+      <h2>Upozorenje ⚠️</h2>
+      <p id="alertText">Opasnost u području!</p>
+      <button onclick="closeAlert()">OK</button>
+    </div>
+  </div>
+  <audio id="alertSound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
 
   <script src="/app.js" defer></script>
 </body>
