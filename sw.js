@@ -1,11 +1,10 @@
-const CACHE = "tbw-premium-v1";
+const CACHE = "tbw-v6";
 const ASSETS = [
   "/", "/index.html", "/style.css", "/app.js",
   "/manifest.json",
   "/assets/TBW.png",
-  "/assets/icons/icon_192.png",
-  "/assets/icons/icon_512.png",
-  "/assets/sounds/intro.mp3"
+  "/assets/icons/icon_192.png", "/assets/icons/icon_512.png",
+  "/assets/sounds/intro.mp3", "/assets/sounds/alert.mp3"
 ];
 
 self.addEventListener("install", (e)=>{
@@ -13,17 +12,10 @@ self.addEventListener("install", (e)=>{
   self.skipWaiting();
 });
 self.addEventListener("activate", (e)=>{
-  e.waitUntil(
-    caches.keys().then(keys=>Promise.all(
-      keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))
-    ))
-  );
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
   self.clients.claim();
 });
 self.addEventListener("fetch", (e)=>{
-  const { request } = e;
-  if(request.method !== "GET") return;
-  e.respondWith(
-    caches.match(request).then(cached => cached || fetch(request))
-  );
+  const req=e.request; if(req.method!=="GET") return;
+  e.respondWith(caches.match(req).then(c=>c||fetch(req).then(r=>{const copy=r.clone(); caches.open(CACHE).then(cc=>cc.put(req,copy)); return r;}).catch(()=>c)));
 });
