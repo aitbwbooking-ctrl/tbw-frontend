@@ -1,156 +1,135 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TBW AI PREMIUM</title>
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="/manifest.json" />
   <link rel="icon" href="/assets/icons/icon_192.png" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
-  <meta name="theme-color" content="#0b0f14" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- SF Pro-ish stack -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#061826" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-
-  <!-- 5s intro -->
-  <div id="intro" class="intro">
-    <img src="assets/TBW.png" alt="TBW" class="intro-logo" />
-    <div class="intro-spark"></div>
-  </div>
-
-  <!-- header -->
-  <header class="topbar glass">
-    <div class="brand">
-      <img src="assets/TBW.png" alt="TBW" />
-      <h1>TBW AI PREMIUM</h1>
-    </div>
-    <div class="alerts-strip">
-      <span>Prometna upozorenja</span><span>•</span>
-      <span>Vrijeme</span><span>•</span>
-      <span>Stanje mora</span><span>•</span>
-      <span>Nesreće</span><span>•</span>
-      <span>Rezervacije</span><span>•</span>
+  <!-- ALERT TRAKA -->
+  <div id="alertBar">
+    <div class="brand">TBW AI PREMIUM</div>
+    <div class="alertsLine">
+      <span>Prometna upozorenja</span>
+      <span>•</span>
+      <span>Vrijeme</span>
+      <span>•</span>
+      <span>Stanje mora</span>
+      <span>•</span>
+      <span>Nesreće</span>
+      <span>•</span>
+      <span>Rezervacije</span>
+      <span>•</span>
       <span>Alert !</span>
     </div>
-    <div class="toolbar">
-      <button id="installBtn" class="btn ghost" hidden>Instaliraj</button>
-      <button id="soundBtn" class="btn ghost">Zvuk: OFF</button>
+  </div>
+
+  <!-- LOGO + SEARCH -->
+  <header class="hero">
+    <img src="/assets/TBW.png" alt="TBW" class="logoBadge" />
+    <div class="searchWrap">
+      <input id="cityInput" type="text" placeholder="Split apartmani" />
+      <button id="goBtn">Traži</button>
     </div>
   </header>
 
-  <!-- pretraživač -->
-  <section class="search-wrap">
-    <div class="badge">TBW</div>
-    <div class="search-bar">
-      <input id="cityInput" type="text" placeholder="Split apartmani" autocomplete="off" />
-      <button id="searchBtn" class="btn primary">Traži</button>
-    </div>
-  </section>
-
-  <!-- GRID (gore 3 kartice) -->
+  <!-- MREŽA KARTICA (točno raspored kao na slici) -->
   <main class="grid">
-    <article class="card xl">
+    <!-- Navigacija -->
+    <section class="card card--tall" id="navCard">
       <h3>Navigacija</h3>
-      <div id="navMap" class="map"></div>
-      <div class="map-caption"><span id="cityName">Split</span></div>
-    </article>
+      <div id="navMap" class="mapBox"></div>
+      <div class="mini-note" id="navNote"></div>
+    </section>
 
-    <article class="card xl">
+    <!-- Rezervacija smještaja -->
+    <section class="card card--tall" id="bookingCard">
       <h3>Rezervacija smještaja</h3>
-      <form class="booking" id="bookingForm">
-        <div class="row">
-          <label>Lokacija</label>
-          <input id="bk-city" type="text" placeholder="Split" />
-        </div>
-        <div class="row two">
-          <div>
-            <label>Dolazak</label>
-            <input id="bk-arrive" type="date" />
-          </div>
-          <div>
-            <label>Odlazak</label>
-            <input id="bk-leave" type="date" />
-          </div>
-        </div>
-        <div class="row two">
-          <div>
-            <label>Prijava zvanja</label>
-            <input id="bk-price" type="number" min="1" value="50" />
-          </div>
-          <div>
-            <label>Osobe</label>
-            <select id="bk-guests">
-              <option>1 posite</option>
-              <option>2 osobe</option>
-              <option>3 osobe</option>
-              <option>4 osobe</option>
-            </select>
-          </div>
-        </div>
-        <div class="icons">
-          <span title="Parking">🅿️</span>
-          <span title="Klimatizacija">❄️</span>
-          <span title="Wi-Fi">📶</span>
-          <span title="Kućni ljubimci">🐾</span>
-        </div>
-        <div class="price">60 € po noći</div>
-        <div class="actions">
-          <button type="submit" class="btn success">Rezerviraj</button>
-        </div>
-      </form>
-    </article>
-
-    <article class="card xl">
-      <h3>Street View</h3>
-      <div class="street">
-        <img id="streetImg" alt="Street view" />
+      <div class="formRow">
+        <label>Lokacija</label>
+        <input id="bkCity" type="text" placeholder="Split" />
       </div>
-    </article>
-
-    <!-- donji red 4 kartice -->
-    <article class="card">
-      <h3>Vrijeme</h3>
-      <div class="weather">
-        <div class="icon">🌧️</div>
+      <div class="formRow two">
         <div>
-          <div class="temp"><span id="wTemp">—</span>°C</div>
-          <div class="sub" id="wDesc">—</div>
+          <label>Dolazak</label>
+          <input id="bkArrive" type="date" />
+        </div>
+        <div>
+          <label>Odlazak</label>
+          <input id="bkLeave" type="date" />
         </div>
       </div>
-      <div class="mini-forecast" id="wCity">—</div>
-    </article>
+      <div class="formRow two">
+        <div>
+          <label>Cijena (€/noć)</label>
+          <input id="bkPrice" type="number" min="10" step="5" value="60" />
+        </div>
+        <div>
+          <label>Gosti</label>
+          <select id="bkGuests">
+            <option>1 osoba</option><option selected>2 osobe</option>
+            <option>3 osobe</option><option>4 osobe</option>
+          </select>
+        </div>
+      </div>
+      <div class="chips" id="bkChips">
+        <span>⭐ 17/5</span><span>🚗 Parking</span><span>🍳 Doručak</span><span>⌚ Kasni check-in</span>
+      </div>
+      <div class="priceLine"><span id="bkPriceShow">60 € po noći</span><button id="bkBtn">Rezerviraj</button></div>
+    </section>
 
-    <article class="card">
-      <h3>Karta</h3>
-      <div id="poiMap" class="minimap"></div>
-    </article>
+    <!-- Street View -->
+    <section class="card card--tall" id="streetCard">
+      <h3>Street View</h3>
+      <img id="streetImg" class="streetImg" alt="Street view" />
+      <div class="mini-note" id="streetNote"></div>
+    </section>
 
-    <article class="card">
+    <!-- Vrijeme -->
+    <section class="card" id="weatherCard">
+      <h3>Vrijeme</h3>
+      <div class="weatherWrap">
+        <div class="wIcon">🌧️</div>
+        <div>
+          <div class="wTemp" id="wTemp">—</div>
+          <div class="wSub" id="wDesc">—</div>
+        </div>
+      </div>
+      <div class="mini-note" id="weatherNote"></div>
+    </section>
+
+    <!-- Promet uživo -->
+    <section class="card" id="trafficCard">
       <h3>Promet uživo</h3>
-      <div class="traffic">
-        <div class="chip green" id="trafficStatus">free flow</div>
-        <div class="mini" id="trafficTime">—</div>
-      </div>
-    </article>
+      <div id="trafficMap" class="mapBox small"></div>
+      <div class="mini-note" id="trafficNote"></div>
+    </section>
 
-    <article class="card">
+    <!-- Stanje mora -->
+    <section class="card" id="seaCard">
       <h3>Stanje mora</h3>
-      <div class="sea">
-        <div class="sun">☀️</div>
-        <div class="temp"><span id="seaTemp">17.8</span>°C</div>
-        <div class="sub">H • <span id="seaHum">74%</span></div>
+      <div class="seaWrap">
+        <div class="seaTemp" id="seaTemp">— °C</div>
+        <div class="seaMeta" id="seaMeta">H —</div>
       </div>
-      <div class="thumb">
-        <img id="seaImg" alt="Sea" />
-      </div>
-    </article>
+      <div class="seaThumbs" id="seaThumbs"></div>
+    </section>
   </main>
 
-  <audio id="bgm" src="assets/sounds/intro.mp3" loop></audio>
-  <script src="app.js" defer></script>
+  <!-- AUDIO intro -->
+  <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
+
+  <script src="/app.js" defer></script>
+  <script>
+    // SW registracija
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+    }
+  </script>
 </body>
 </html>
