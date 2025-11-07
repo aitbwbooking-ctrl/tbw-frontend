@@ -1,22 +1,12 @@
 {
-  "name": "TBW AI Concierge",
+  "name": "TBW AI PREMIUM",
   "short_name": "TBW AI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
-  "orientation": "portrait-primary",
-
+  "background_color": "#061826",
+  "theme_color": "#061826",
   "icons": [
-    {
-      "src": "/assets/icons/icon_192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/assets/icons/icon_512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
+    { "src": "/assets/icons/icon_192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icons/icon_512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
