@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TBW AI PREMIUM</title>
 
-  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#001a28" />
+  <link rel="manifest" href="/manifest.json" />
   <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/style.css?v=6" />
 </head>
 <body>
-  <!-- 5s intro overlay -->
-  <div id="introOverlay" class="intro is-visible">
+  <!-- Intro (5s) -->
+  <div id="introOverlay" class="intro">
     <div class="intro-inner">
       <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
       <div class="intro-title">TBW AI PREMIUM</div>
@@ -23,7 +23,7 @@
     <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
   </div>
 
-  <!-- Top alert traka -->
+  <!-- Gornja traka upozorenja -->
   <div id="topBar" class="topbar">
     <div class="topbar-inner">
       <strong>Prometna upozorenja • Vrijeme • Stanje mora • Nesreće • Rezervacije • Alert!</strong>
@@ -38,13 +38,13 @@
       <h1>TBW AI PREMIUM</h1>
     </div>
     <div class="search">
-      <input id="cityInput" type="text" placeholder="Split, Zadar, Zagreb…" />
+      <input id="cityInput" class="input" type="text" placeholder="Split, Zadar, Zagreb…" />
       <button id="askBtn" class="btn">Traži</button>
       <span id="backendDot" class="dot" title="Backend status"></span>
     </div>
   </header>
 
-  <!-- GRID 3x3 -->
+  <!-- Grid sekcije -->
   <main class="grid">
     <!-- Navigacija -->
     <section class="card">
@@ -57,7 +57,7 @@
       </div>
     </section>
 
-    <!-- Rezervacija -->
+    <!-- Rezervacija smještaja -->
     <section class="card">
       <h2>Rezervacija smještaja</h2>
       <div class="row gap">
@@ -117,14 +117,14 @@
       <div id="poiBox" class="poi"></div>
     </section>
 
-    <!-- Karta (pregled) -->
+    <!-- Karta pregled -->
     <section class="card">
       <h2>Karta</h2>
       <div id="miniMap" class="map"></div>
     </section>
   </main>
 
-  <!-- AI chat -->
+  <!-- AI chat na dnu -->
   <footer class="footer">
     <div class="chat">
       <input id="assistantInput" class="input" placeholder="Postavi pitanje (npr. najbolja plaža u Splitu)..." />
@@ -133,16 +133,6 @@
     <div id="messages" class="messages"></div>
   </footer>
 
-  <!-- ALERT MODAL + zvuk -->
-  <div id="alertModal" class="alert-modal">
-    <div class="alert-box">
-      <h2>Upozorenje ⚠️</h2>
-      <p id="alertText">Opasnost u području!</p>
-      <button onclick="closeAlert()">OK</button>
-    </div>
-  </div>
-  <audio id="alertSound" src="/assets/sounds/alert.mp3" preload="auto"></audio>
-
-  <script src="/app.js" defer></script>
+  <script src="/app.js?v=6" defer></script>
 </body>
 </html>
