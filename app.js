@@ -1,76 +1,120 @@
-const API = "https://tbw-backend.onrender.com";
-
-window.onload = () => {
-  document.getElementById("introSound").play().catch(()=>{});
-  document.getElementById("cityInput").value = "Split";
-  loadDashboard();
+// ====== CONFIG ======
+const CONFIG = {
+  BACKEND: "https://tbw-backend.onrender.com", // promijeni ako treba
+  defaultCity: "Split",
 };
 
-async function loadDashboard() {
-  const city = document.getElementById("cityInput").value;
+// ====== INIT ======
+let deferredPrompt = null;
+const intro = document.getElementById("intro");
+const bgm = document.getElementById("bgm");
+const soundBtn = document.getElementById("soundBtn");
+const installBtn = document.getElementById("installBtn");
 
-  // health badge
-  try {
-    const ok = await fetch(`${API}/api/health`);
-    document.getElementById("statusBadge").style.color =
-      ok.ok ? "lime" : "red";
-  } catch {
-    document.getElementById("statusBadge").style.color = "red";
+window.addEventListener("load", () => {
+  // start intro (5s fade je u CSS-u)
+  setTimeout(() => { intro.style.display = "none"; }, 5200);
+
+  // Service Worker
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(console.warn);
   }
 
-  // WEATHER
-  const w = await (await fetch(`${API}/api/weather?city=${city}`)).json();
-  document.getElementById("weatherBox").innerHTML =
-    `<b>${city}</b><br>${Math.round(w.main.temp)}°C, ${w.weather[0].description}`;
-
-  // PHOTOS
-  const ph = await (await fetch(`${API}/api/photos?q=${city}`)).json();
-  const photos = document.getElementById("photos");
-  photos.innerHTML = "";
-  ph.results.slice(0,6).forEach(p=>{
-    const img = document.createElement("img");
-    img.src = p.urls.small;
-    photos.appendChild(img);
+  // PWA install
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.hidden = false;
+  });
+  installBtn.addEventListener("click", async () => {
+    installBtn.hidden = true;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    }
   });
 
-  // POI + MAP
-  const poi = await (await fetch(`${API}/api/poi?city=${city}`)).json();
-  const list = document.getElementById("poiList");
-  list.innerHTML = "";
-  let coords = [];
-
-  poi.items.forEach(p=>{
-    const li = document.createElement("li");
-    li.innerHTML = `<b>${p.name}</b><br><small>${p.short}</small>`;
-    list.appendChild(li);
-
-    if(p.lat && p.lon) coords.push([p.lat,p.lon]);
+  // Sound toggle (autoplay policy: kreće tek nakon interakcije)
+  soundBtn.addEventListener("click", () => {
+    if (bgm.paused) { bgm.volume = 0.35; bgm.play().catch(()=>{}); soundBtn.textContent = "Zvuk: ON"; }
+    else { bgm.pause(); soundBtn.textContent = "Zvuk: OFF"; }
   });
 
-  // map
-  if(!window.map) {
-    window.map = L.map('map').setView(coords[0] || [44,16], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  // UI hooks
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    const val = document.getElementById("cityInput").value.trim() || CONFIG.defaultCity;
+    loadDashboard(val);
+  });
+
+  // enter to search
+  document.getElementById("cityInput").addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"){ e.preventDefault(); document.getElementById("searchBtn").click(); }
+  });
+
+  // init
+  loadDashboard(CONFIG.defaultCity);
+});
+
+// ====== DASHBOARD LOADER ======
+async function loadDashboard(city){
+  document.getElementById("cityName").textContent = city;
+  document.getElementById("bk-city").value = city;
+
+  // Navigacija karta (OpenStreetMap static)
+  const nav = document.getElementById("navMap");
+  nav.innerHTML = `<img alt="mapa" style="width:100%;height:100%;object-fit:cover;opacity:.95"
+    src="https://staticmap.openstreetmap.de/staticmap.php?center=${encodeURIComponent(city)}&zoom=13&size=640x360&maptype=mapnik&markers=${encodeURIComponent(city)},lightblue1" />`;
+
+  // POI mini karta (druga pozicija)
+  const poi = document.getElementById("poiMap");
+  poi.innerHTML = `<img alt="poi" style="width:100%;height:100%;object-fit:cover;opacity:.95"
+    src="https://staticmap.openstreetmap.de/staticmap.php?center=${encodeURIComponent(city)}&zoom=12&size=640x320&maptype=mapnik&markers=${encodeURIComponent(city)},red" />`;
+
+  // Street photo (Unsplash preko backenda)
+  try{
+    const p = await fetch(`${CONFIG.BACKEND}/api/photos?q=${encodeURIComponent(city)}`);
+    const pdata = await p.json();
+    const first = pdata?.results?.[0]?.urls?.regular;
+    document.getElementById("streetImg").src = first || "assets/TBW.png";
+  }catch(_){ document.getElementById("streetImg").src = "assets/TBW.png"; }
+
+  // Sea thumb (druga fotka)
+  try{
+    const p = await fetch(`${CONFIG.BACKEND}/api/photos?q=${encodeURIComponent(city+" sea")}`);
+    const pdata = await p.json();
+    const img = pdata?.results?.[1]?.urls?.small;
+    document.getElementById("seaImg").src = img || "assets/TBW.png";
+  }catch(_){ document.getElementById("seaImg").src = "assets/TBW.png"; }
+
+  // Vrijeme
+  try{
+    const r = await fetch(`${CONFIG.BACKEND}/api/weather?city=${encodeURIComponent(city)}`);
+    const w = await r.json();
+    const t = Math.round(w?.main?.temp ?? 0);
+    const desc = w?.weather?.[0]?.description ?? "";
+    document.getElementById("wTemp").textContent = t;
+    document.getElementById("wDesc").textContent = desc;
+    document.getElementById("wCity").textContent = (w?.name || city) + ", " + (w?.sys?.country || "");
+  }catch(_){
+    document.getElementById("wTemp").textContent = "—";
+    document.getElementById("wDesc").textContent = "Nije dostupno";
+    document.getElementById("wCity").textContent = city;
   }
-  coords.forEach(c => L.marker(c).addTo(map));
+
+  // Promet (demo iz backenda)
+  try{
+    const r = await fetch(`${CONFIG.BACKEND}/api/traffic`);
+    const d = await r.json();
+    document.getElementById("trafficStatus").textContent = d.status;
+    document.getElementById("trafficTime").textContent = new Date(d.last_update).toLocaleTimeString("hr-HR");
+  }catch(_){}
+
+  // (Opcija) opis znamenitosti – kada kliknemo kasnije na POI (ostavljeno spremno)
 }
 
-// CHAT
-async function sendMessage() {
-  const input = document.getElementById("assistantInput");
-  const msg = input.value.trim();
-  if(!msg) return;
-
-  const box = document.getElementById("messages");
-  box.innerHTML += `<div class="msg">👤 ${msg}</div>`;
-
-  const r = await fetch(`${API}/api/chat`, {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({message:msg})
-  });
-  const j = await r.json();
-
-  box.innerHTML += `<div class="msg bot">🤖 ${j.reply}</div>`;
-  input.value = "";
-}
+// ====== Booking (demo) ======
+document.getElementById("bookingForm").addEventListener("submit",(e)=>{
+  e.preventDefault();
+  alert("Rezervacijski upit poslan! (demo)");
+});
