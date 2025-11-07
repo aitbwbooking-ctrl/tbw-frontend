@@ -1,120 +1,166 @@
-// ====== CONFIG ======
-const CONFIG = {
-  BACKEND: "https://tbw-backend.onrender.com", // promijeni ako treba
-  defaultCity: "Split",
+// API rute (backend već ima /api/*)
+const API = {
+  weather:  (city) => `/api/weather?city=${encodeURIComponent(city)}`,
+  poi:      (city) => `/api/poi?city=${encodeURIComponent(city)}`,
+  alerts:   (city) => `/api/alerts?city=${encodeURIComponent(city)}`,
+  traffic:  ()     => `/api/traffic`,
+  photos:   (q)    => `/api/photos?q=${encodeURIComponent(q)}`,
 };
 
-// ====== INIT ======
-let deferredPrompt = null;
-const intro = document.getElementById("intro");
-const bgm = document.getElementById("bgm");
-const soundBtn = document.getElementById("soundBtn");
-const installBtn = document.getElementById("installBtn");
+// Učitamo config da dohvatimo Google Maps API ključ i onda dinamčki učitamo Maps JS
+let MAPS_KEY = null;
+let gmap, trafficLayer, svService;
 
-window.addEventListener("load", () => {
-  // start intro (5s fade je u CSS-u)
-  setTimeout(() => { intro.style.display = "none"; }, 5200);
+async function loadMaps() {
+  if (MAPS_KEY) return;
+  const cfg = await fetch('/config.json').then(r => r.json()).catch(()=>({}));
+  MAPS_KEY = cfg.MAPS_API_KEY || "";
+  if (!MAPS_KEY) { console.warn("Nema MAPS_API_KEY u config.json — karta će biti statična."); return; }
 
-  // Service Worker
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch(console.warn);
-  }
-
-  // PWA install
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.hidden = false;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=places`;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
   });
-  installBtn.addEventListener("click", async () => {
-    installBtn.hidden = true;
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    }
-  });
-
-  // Sound toggle (autoplay policy: kreće tek nakon interakcije)
-  soundBtn.addEventListener("click", () => {
-    if (bgm.paused) { bgm.volume = 0.35; bgm.play().catch(()=>{}); soundBtn.textContent = "Zvuk: ON"; }
-    else { bgm.pause(); soundBtn.textContent = "Zvuk: OFF"; }
-  });
-
-  // UI hooks
-  document.getElementById("searchBtn").addEventListener("click", () => {
-    const val = document.getElementById("cityInput").value.trim() || CONFIG.defaultCity;
-    loadDashboard(val);
-  });
-
-  // enter to search
-  document.getElementById("cityInput").addEventListener("keydown",(e)=>{
-    if(e.key==="Enter"){ e.preventDefault(); document.getElementById("searchBtn").click(); }
-  });
-
-  // init
-  loadDashboard(CONFIG.defaultCity);
-});
-
-// ====== DASHBOARD LOADER ======
-async function loadDashboard(city){
-  document.getElementById("cityName").textContent = city;
-  document.getElementById("bk-city").value = city;
-
-  // Navigacija karta (OpenStreetMap static)
-  const nav = document.getElementById("navMap");
-  nav.innerHTML = `<img alt="mapa" style="width:100%;height:100%;object-fit:cover;opacity:.95"
-    src="https://staticmap.openstreetmap.de/staticmap.php?center=${encodeURIComponent(city)}&zoom=13&size=640x360&maptype=mapnik&markers=${encodeURIComponent(city)},lightblue1" />`;
-
-  // POI mini karta (druga pozicija)
-  const poi = document.getElementById("poiMap");
-  poi.innerHTML = `<img alt="poi" style="width:100%;height:100%;object-fit:cover;opacity:.95"
-    src="https://staticmap.openstreetmap.de/staticmap.php?center=${encodeURIComponent(city)}&zoom=12&size=640x320&maptype=mapnik&markers=${encodeURIComponent(city)},red" />`;
-
-  // Street photo (Unsplash preko backenda)
-  try{
-    const p = await fetch(`${CONFIG.BACKEND}/api/photos?q=${encodeURIComponent(city)}`);
-    const pdata = await p.json();
-    const first = pdata?.results?.[0]?.urls?.regular;
-    document.getElementById("streetImg").src = first || "assets/TBW.png";
-  }catch(_){ document.getElementById("streetImg").src = "assets/TBW.png"; }
-
-  // Sea thumb (druga fotka)
-  try{
-    const p = await fetch(`${CONFIG.BACKEND}/api/photos?q=${encodeURIComponent(city+" sea")}`);
-    const pdata = await p.json();
-    const img = pdata?.results?.[1]?.urls?.small;
-    document.getElementById("seaImg").src = img || "assets/TBW.png";
-  }catch(_){ document.getElementById("seaImg").src = "assets/TBW.png"; }
-
-  // Vrijeme
-  try{
-    const r = await fetch(`${CONFIG.BACKEND}/api/weather?city=${encodeURIComponent(city)}`);
-    const w = await r.json();
-    const t = Math.round(w?.main?.temp ?? 0);
-    const desc = w?.weather?.[0]?.description ?? "";
-    document.getElementById("wTemp").textContent = t;
-    document.getElementById("wDesc").textContent = desc;
-    document.getElementById("wCity").textContent = (w?.name || city) + ", " + (w?.sys?.country || "");
-  }catch(_){
-    document.getElementById("wTemp").textContent = "—";
-    document.getElementById("wDesc").textContent = "Nije dostupno";
-    document.getElementById("wCity").textContent = city;
-  }
-
-  // Promet (demo iz backenda)
-  try{
-    const r = await fetch(`${CONFIG.BACKEND}/api/traffic`);
-    const d = await r.json();
-    document.getElementById("trafficStatus").textContent = d.status;
-    document.getElementById("trafficTime").textContent = new Date(d.last_update).toLocaleTimeString("hr-HR");
-  }catch(_){}
-
-  // (Opcija) opis znamenitosti – kada kliknemo kasnije na POI (ostavljeno spremno)
 }
 
-// ====== Booking (demo) ======
-document.getElementById("bookingForm").addEventListener("submit",(e)=>{
-  e.preventDefault();
-  alert("Rezervacijski upit poslan! (demo)");
+function initMapsContainers() {
+  // Navigacija karta
+  const navEl = document.getElementById('navMap');
+  if (window.google && navEl) {
+    gmap = new google.maps.Map(navEl, { center:{lat:43.5081,lng:16.4402}, zoom:12, disableDefaultUI:true, styles:[{featureType:"poi",stylers:[{visibility:"off"}]}] });
+  }
+  // Promet karta
+  const trEl = document.getElementById('trafficMap');
+  if (window.google && trEl) {
+    const tmap = new google.maps.Map(trEl, { center:{lat:43.5081,lng:16.4402}, zoom:12, disableDefaultUI:true, styles:[{featureType:"poi",stylers:[{visibility:"off"}]}] });
+    trafficLayer = new google.maps.TrafficLayer();
+    trafficLayer.setMap(tmap);
+  }
+  svService = (window.google) ? new google.maps.StreetViewService() : null;
+}
+
+// Uvod – 5 sekundi + zvuk
+function playIntro() {
+  const a = document.getElementById('introAudio');
+  setTimeout(()=>{ a?.play().catch(()=>{}); }, 300); // diskretno
+}
+
+// StreetView statična slika preko Google Static Street View API-ja
+function setStreetViewByCoords(lat, lng) {
+  const img = document.getElementById('streetImg');
+  if (!img) return;
+  if (!MAPS_KEY) {
+    img.src = "https://images.unsplash.com/photo-1520931737576-7b8750f4dcd7?w=1200&q=60";
+    document.getElementById('streetNote').textContent = "Street View: potreban Google Maps ključ u config.json (MAPS_API_KEY).";
+    return;
+  }
+  const url = `https://maps.googleapis.com/maps/api/streetview?size=800x420&location=${lat},${lng}&fov=90&pitch=0&key=${MAPS_KEY}`;
+  img.src = url;
+  document.getElementById('streetNote').textContent = `Lokacija: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+}
+
+// Prikaži navigacijsku rutu + POI oznake (mini demo)
+function drawRouteAndPoi(pois) {
+  const note = document.getElementById('navNote');
+  if (!window.google || !gmap) {
+    note.textContent = "Karta bez Google Maps ključa – prikaz ograničen.";
+    return;
+  }
+  // centriraj na prvi POI ako postoji
+  if (pois?.length) {
+    const p = pois[0];
+    gmap.setCenter({lat:p.lat, lng:p.lon});
+  }
+  // markeri (ograniči na 6)
+  (pois||[]).slice(0,6).forEach(p=>{
+    new google.maps.Marker({map:gmap, position:{lat:p.lat,lng:p.lon}, title:p.name});
+  });
+  note.textContent = "Označeno nekoliko znamenitosti.";
+}
+
+// WEATHER -> SEA (grubo: morska temp ~ zrak - 2°C kad je > 12°C)
+function fillSeaFromWeather(w) {
+  const t = w?.main?.temp ?? null;
+  const hum = w?.main?.humidity ?? null;
+  const seaT = (t!==null) ? Math.max(6, (t>12 ? t-2 : t-4)) : "—";
+  document.getElementById('seaTemp').textContent = (seaT==="—") ? "— °C" : `${seaT.toFixed(1)} °C`;
+  document.getElementById('seaMeta').textContent = `H - ${hum ?? "—"}%`;
+}
+
+async function loadDashboard(city) {
+  const c = city || document.getElementById('cityInput').value.trim() || "Split";
+  document.getElementById('cityInput').value = c;
+  document.getElementById('bkCity').value = c;
+
+  // ALERTS
+  fetch(API.alerts(c)).then(r=>r.json()).then(d=>{
+    if (d?.alerts?.length) {
+      const line = d.alerts.map(a=>a.message).join(" • ");
+      document.querySelector('#alertBar .alertsLine').innerHTML = line.split("•").map(x=>`<span>${x.trim()}</span>`).join('<span>•</span>');
+    }
+  }).catch(()=>{});
+
+  // VRIJEME
+  try{
+    const w = await fetch(API.weather(c)).then(r=>r.json());
+    const temp = (w?.main?.temp!=null) ? `${Math.round(w.main.temp)}°C` : "—";
+    const desc = w?.weather?.[0]?.description || "—";
+    document.getElementById('wTemp').textContent = temp;
+    document.getElementById('wDesc').textContent = desc;
+    document.getElementById('weatherNote').textContent = `${(w?.name||c)}, vjetar ${(w?.wind?.speed??"—")} m/s`;
+    fillSeaFromWeather(w);
+  }catch(e){ document.getElementById('weatherNote').textContent = "Greška pri dohvaćanju vremena."; }
+
+  // POI
+  let pois = [];
+  try{
+    const d = await fetch(API.poi(c)).then(r=>r.json());
+    pois = d?.items || [];
+    drawRouteAndPoi(pois);
+    if (pois.length) setStreetViewByCoords(pois[0].lat, pois[0].lon);
+  }catch(e){
+    document.getElementById('navNote').textContent = "POI nedostupni.";
+  }
+
+  // PROMET
+  fetch(API.traffic()).then(r=>r.json()).then(d=>{
+    document.getElementById('trafficNote').textContent = `Stanje: ${d?.status || "—"}, ažurirano: ${new Date(d?.last_update||Date.now()).toLocaleTimeString()}`;
+  }).catch(()=>{ document.getElementById('trafficNote').textContent = "Promet nedostupan."; });
+
+  // SEA THUMBS (fotke)
+  try{
+    const ph = await fetch(API.photos(`${c} seaside`)).then(r=>r.json());
+    const imgs = (ph?.results||[]).slice(0,4).map(p=>p.urls?.small).filter(Boolean);
+    const box = document.getElementById('seaThumbs'); box.innerHTML = "";
+    imgs.forEach(u=>{
+      const img = new Image(); img.src = u; box.appendChild(img);
+    });
+  }catch{}
+}
+
+function wireUI(){
+  document.getElementById('goBtn').addEventListener('click', ()=>loadDashboard());
+  document.getElementById('bkBtn').addEventListener('click', ()=>{
+    const city = document.getElementById('bkCity').value || "Split";
+    const arrive = document.getElementById('bkArrive').value || "24.09";
+    const leave  = document.getElementById('bkLeave').value || "30.09";
+    const price  = document.getElementById('bkPrice').value || "60";
+    const guests = document.getElementById('bkGuests').value || "2 osobe";
+    alert(`Rezervacija poslana!\n\nLokacija: ${city}\nDolazak: ${arrive}\nOdlazak: ${leave}\nCijena: ${price} €/noć\nGosti: ${guests}`);
+  });
+  document.getElementById('bkPrice').addEventListener('input', (e)=>{
+    document.getElementById('bkPriceShow').textContent = `${e.target.value||60} € po noći`;
+  });
+}
+
+window.addEventListener('load', async ()=>{
+  playIntro();
+  await loadMaps();
+  initMapsContainers();
+  wireUI();
+  loadDashboard("Split");
 });
