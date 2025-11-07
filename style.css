@@ -1,72 +1,103 @@
-body {
-  margin:0;
-  font-family:Arial;
-  background:#0b1220;
-  color:white;
+:root{
+  --bg:#070b10;
+  --panel:#0d141b;
+  --glass:rgba(255,255,255,.06);
+  --accent:#53d6b3;
+  --text:#d9e6ef;
+  --muted:#8aa0b2;
+  --card:#0b1218;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background: radial-gradient(1000px 600px at 20% -10%, rgba(83,214,179,.08), transparent) , var(--bg);
+  color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-.topbar {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px;
-  background:#0d172a;
-  border-bottom:1px solid #163557;
+/* intro */
+.intro{
+  position:fixed; inset:0; display:grid; place-items:center; background: radial-gradient(1200px 800px at 50% -20%, rgba(83,214,179,.08), transparent), #000;
+  z-index:9999; animation: fadeOut 1s ease 4s forwards;
 }
-.logo {
-  width:50px;
-  border-radius:10px;
+.intro-logo{width:140px; opacity:.9; filter: drop-shadow(0 10px 25px rgba(83,214,179,.35))}
+.intro-spark{
+  position:absolute; width:420px; height:420px; border-radius:50%;
+  background: radial-gradient(circle at 70% 30%, rgba(255,210,100,.8), rgba(255,210,100,.0) 60%);
+  filter: blur(40px); opacity:.35; animation: spark 4s ease;
 }
-.grid {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  padding:10px;
+@keyframes spark{0%{transform:translateX(-220px) scale(.6)}100%{transform:translateX(220px) scale(1)}}
+@keyframes fadeOut{to{opacity:0; visibility:hidden}}
+
+/* header */
+.topbar{position:sticky; top:0; z-index:10; display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:16px; padding:16px 24px; margin:12px; border-radius:var(--radius); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); box-shadow:var(--shadow)}
+.topbar .brand{display:flex; align-items:center; gap:14px}
+.topbar img{width:42px; height:42px; object-fit:contain}
+.topbar h1{font-size:28px; letter-spacing:.5px; margin:0; color:var(--accent)}
+.alerts-strip{color:#9de9d4; opacity:.95; white-space:nowrap}
+.toolbar{display:flex; gap:8px}
+
+/* search */
+.search-wrap{display:grid; place-items:center; gap:16px; margin:18px 0}
+.badge{width:62px; height:62px; border-radius:50%; display:grid; place-items:center; color:#9de9d4; border:1px solid rgba(83,214,179,.35); background:rgba(255,255,255,.04); box-shadow: inset 0 0 30px rgba(83,214,179,.08)}
+.search-bar{display:flex; gap:10px; width:min(820px, 90vw); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); padding:10px; border-radius:14px; box-shadow:var(--shadow)}
+.search-bar input{flex:1; background:transparent; border:0; color:var(--text); font-size:22px; padding:10px}
+.search-bar input::placeholder{color:var(--muted)}
+
+/* grid */
+.grid{
+  display:grid; grid-template-columns: repeat(12,1fr); gap:16px; padding:0 16px 30px;
 }
-.card {
-  background:#111b31;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #1d355b;
+.card{grid-column: span 3; background: var(--card); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); padding:16px; box-shadow: var(--shadow)}
+.card.xl{grid-column: span 4}
+.card h3{margin:0 0 12px; font-size:20px}
+
+/* map blocks */
+.map, .street, .minimap{height:230px; border-radius:12px; overflow:hidden; background:#0a0f14; border:1px solid rgba(255,255,255,.05)}
+.map-caption{margin-top:8px; color:var(--muted)}
+.minimap{height:160px}
+.street img, .thumb img{width:100%; height:100%; object-fit:cover}
+.thumb{margin-top:10px; height:80px; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.05)}
+
+/* weather */
+.weather{display:flex; gap:14px; align-items:center}
+.weather .icon{font-size:34px}
+.temp{font-size:22px; font-weight:700}
+.sub{color:var(--muted)}
+.mini-forecast{margin-top:10px; color:var(--muted)}
+
+/* traffic */
+.traffic .chip{display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(83,214,179,.15); border:1px solid rgba(83,214,179,.35)}
+.traffic .mini{margin-top:8px; color:var(--muted)}
+
+/* sea */
+.sea{display:flex; align-items:center; gap:14px}
+
+/* booking */
+.booking{display:flex; flex-direction:column; gap:12px}
+.booking .row{display:flex; flex-direction:column; gap:6px}
+.booking .row.two{flex-direction:row; gap:10px}
+.booking .row.two>div{flex:1}
+.booking label{color:var(--muted); font-size:13px}
+.booking input, .booking select{
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
+  color:var(--text); padding:10px 12px; border-radius:10px; outline:none;
 }
-.search {
-  display:flex;
-  gap:10px;
-  padding:10px;
-}
-input, button {
-  padding:10px;
-  border:none;
-  border-radius:6px;
-}
-button {
-  background:#00e6b8;
-  font-weight:bold;
-  cursor:pointer;
-}
-.photos {
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-}
-.photos img {
-  width:100%;
-  height:90px;
-  border-radius:8px;
-  object-fit:cover;
-}
-#messages {
-  max-height:200px;
-  overflow:auto;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.msg {
-  background:#0a162d;
-  padding:8px;
-  border-radius:8px;
-}
-.msg.bot {
-  border:1px solid #00e6b8;
-}
+.icons{display:flex; gap:10px; opacity:.9}
+.price{margin-top:4px; color:#cdebe2}
+.actions{display:flex; justify-content:flex-end}
+
+/* buttons */
+.btn{cursor:pointer; padding:10px 14px; border-radius:10px; border:1px solid transparent; color:#071016; font-weight:600}
+.btn.primary{background:var(--accent)}
+.btn.success{background:#58d060}
+.btn.ghost{background:transparent; color:#9de9d4; border-color:rgba(83,214,179,.35)}
+.btn:disabled{opacity:.6; cursor:not-allowed}
+
+/* glass helper */
+.glass{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius)}
+
+/* responsive */
+@media (max-width:1100px){ .card{grid-column: span 6} .card.xl{grid-column: span 12} }
+@media (max-width:700px){ .card{grid-column: span 12} .search-bar input{font-size:18px} .topbar{grid-template-columns:1fr} .toolbar{justify-self:flex-end} }
