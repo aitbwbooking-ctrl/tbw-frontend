@@ -1,215 +1,213 @@
-// === CONFIG ===
-const CONFIG_URL = "/config.json";
-let CFG = { API_BASE_URL: "", MAPS_API_KEY: "" };
+const FEATURES = { voiceSearch:true, rdsTraffic:true };
 
-async function loadConfig(){
-  const r = await fetch(CONFIG_URL, { cache:"no-store" });
-  CFG = await r.json();
-}
+(async function boot(){
+  const cfg = await (await fetch('/config.json?v='+Date.now())).json();
+  window.CFG = cfg;
 
-// === UI HELPERS ===
-const $ = (q) => document.querySelector(q);
-const $box = (id) => document.getElementById(id);
-
-function setTicker(text){ $box("alertsTicker").textContent = text; }
-function msg(html){ return `<div class="result-item">${html}</div>`; }
-
-// === MAPS ===
-let navMap, miniMap, trafficMap, streetView;
-function initMaps(){
-  // Nav
-  navMap = new google.maps.Map($box("navMap"), { center:{lat:45.8,lng:16.0}, zoom:7, mapId:"TBW_NAV" });
-  // Mini
-  miniMap = new google.maps.Map($box("miniMap"), { center:{lat:45.6,lng:16.5}, zoom:6, mapId:"TBW_OVERVIEW" });
-  // Traffic
-  trafficMap = new google.maps.Map($box("trafficMap"), { center:{lat:45.3,lng:15.8}, zoom:7, mapId:"TBW_TRAFFIC" });
-  new google.maps.TrafficLayer().setMap(trafficMap);
-  // Street
-  streetView = new google.maps.StreetViewPanorama($box("streetView"), {
-    position:{lat:43.5081,lng:16.4402}, pov:{ heading: 100, pitch: 0 }, zoom:1
-  });
-}
-
-// Simple directions via URL (otvara Google Maps s rutom)
-function openRoute(){
-  const from = encodeURIComponent($box("routeFrom").value || "");
-  const to = encodeURIComponent($box("routeTo").value || "");
-  if(!to){ alert("Upiši odredište"); return; }
-  const url = from
-    ? `https://www.google.com/maps/dir/${from}/${to}`
-    : `https://www.google.com/maps/dir/${to}`;
-  window.open(url, "_blank");
-}
-
-// === DATA LOADERS (BACKEND) ===
-async function checkHealth(){
-  try{
-    const r = await fetch(`${CFG.API_BASE_URL}/api/health`);
-    $box("backendDot").style.background = r.ok ? "#3df0d1" : "#ff3b4e";
-  }catch{
-    $box("backendDot").style.background = "#ff3b4e";
-  }
-}
-
-async function loadAlerts(city="Hrvatska"){
-  try{
-    const r = await fetch(`${CFG.API_BASE_URL}/api/alerts?city=${encodeURIComponent(city)}`);
-    const d = await r.json();
-    const txt = d.alerts.map(a=>a.message).join(" • ");
-    setTicker(txt || "Nema posebnih upozorenja.");
-  }catch{ setTicker("Nema posebnih upozorenja."); }
-}
-
-async function loadWeather(city="Zagreb"){
-  try{
-    const r = await fetch(`${CFG.API_BASE_URL}/api/weather?city=${encodeURIComponent(city)}`);
-    const d = await r.json();
-    const t = Math.round(d.main?.temp ?? 17);
-    const desc = d.weather?.[0]?.description || "-";
-    $box("weatherBox").innerHTML = `<div>${city} • ${t}°C, ${desc}</div>`;
-  }catch{ $box("weatherBox").textContent = "-"; }
-}
-
-async function loadPhotos(q="Split"){
-  try{
-    const r = await fetch(`${CFG.API_BASE_URL}/api/photos?q=${encodeURIComponent(q)}`);
-    const d = await r.json();
-    const items = (d.results||[]).slice(0,6).map(p=>`<img src="${p.urls?.small}" alt="${q}">`).join("");
-    $box("mediaBox").innerHTML = items || "<div>Nema fotografija.</div>";
-  }catch{ $box("mediaBox").textContent = "-"; }
-}
-
-async function loadPOI(city="Split"){
-  try{
-    const r = await fetch(`${CFG.API_BASE_URL}/api/poi?city=${encodeURIComponent(city)}`);
-    const d = await r.json();
-    const html = (d.items||[]).slice(0,6).map(i=>msg(`<div><strong>${i.name}</strong><div class="meta">${i.short||""}</div></div>`)).join("");
-    $box("poiBox").innerHTML = html || "<div class='meta'>Nema podataka.</div>";
-  }catch{ $box("poiBox").textContent = "-"; }
-}
-
-async function loadSea(city="Split"){
-  // placeholder (možeš kasnije spojiti svoj izvor/boje plave zastave)
-  $box("seaBox").innerHTML = `
-    ${msg(`<div><strong>Temperatura mora</strong> <span class="price">17.8 °C</span><div class="meta">Vlaga 74%</div></div>`)}
-  `;
-}
-
-// === BOOKING UI ===
-function bookingGoogleUrl(city, arrive, depart, guests){
-  const q = encodeURIComponent(`${city} hotels from ${arrive||""} to ${depart||""} ${guests||1} guests`);
-  return `https://www.google.com/maps/search/${q}`;
-}
-
-function bookingRenderPlaceholder(city){
-  const list = [
-    {name:"Apartman Perla", city, price:60},
-    {name:"Villa Mare", city, price:82},
-    {name:"City Rooms", city, price:55},
-  ];
-  $box("hotelResults").innerHTML = list.map(h => (
-    `<div class="result-item">
-      <div>
-        <div><strong>${h.name}</strong> — ${h.city}</div>
-        <div class="meta">Besplatan otkaz, doručak dostupan</div>
-      </div>
-      <div>
-        <div class="price">${h.price} € / noć</div>
-        <div class="meta"><a target="_blank" href="${bookingGoogleUrl(h.city)}">Prikaži na karti</a></div>
-      </div>
-    </div>`
-  )).join("");
-}
-
-function onBookingSearch(){
-  const city = $box("hotelCity").value.trim() || "Split";
-  const a = $box("arrive").value;
-  const d = $box("depart").value;
-  const g = +($box("guests").value||2);
-  // sada placeholder + link na Maps — backend end-to-end može kasnije
-  bookingRenderPlaceholder(city);
-  const url = bookingGoogleUrl(city, a, d, g);
-  // spremi “odabir” na dataset (za Rezerviraj/Otkaži)
-  $box("hotelResults").dataset.pendingUrl = url;
-}
-
-function onBookingConfirm(){
-  const url = $box("hotelResults").dataset.pendingUrl;
-  if(!url){ alert("Prvo pretraži smještaj."); return; }
-  window.open(url, "_blank");
-}
-
-function onBookingCancel(){
-  $box("hotelResults").innerHTML = "";
-  delete $box("hotelResults").dataset.pendingUrl;
-}
-
-// === SEARCH (input + mic) ===
-function onSearch(){
-  const city = $box("cityInput").value.trim() || "Split";
-  loadAlerts(city);
-  loadWeather(city);
-  loadPhotos(city);
-  loadPOI(city);
-  loadSea(city);
-
-  // pomakni StreetView na tu lokaciju (geocode preko Maps Places)
-  if(window.google?.maps?.places){
-    const service = new google.maps.places.PlacesService(navMap);
-    const req = { query: city, fields:["name","geometry"] };
-    service.findPlaceFromQuery(req, (res, status) => {
-      if(status === google.maps.places.PlacesServiceStatus.OK && res[0]?.geometry?.location){
-        const loc = res[0].geometry.location;
-        streetView.setPosition(loc);
-        navMap.setCenter(loc); navMap.setZoom(11);
-      }
-    });
-  }
-}
-
-function initMic(){
-  const btn = $box("micBtn");
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition){ btn.style.display="none"; return; }
-  const rec = new SpeechRecognition();
-  rec.lang = "hr-HR";
-  btn.addEventListener("click", ()=>{
-    rec.start();
-    btn.textContent = "🔴";
-  });
-  rec.onresult = (e)=>{
-    const txt = e.results[0][0].transcript;
-    $box("cityInput").value = txt;
-    btn.textContent = "🎤";
-    onSearch();
-  };
-  rec.onend = ()=> btn.textContent = "🎤";
-}
-
-// === BOOT ===
-(async function start(){
-  await loadConfig();
-  await checkHealth();
-  await loadAlerts("Hrvatska");
-  await loadWeather("Zagreb");
-  await loadPhotos("Split");
-  await loadPOI("Split");
-  await loadSea("Split");
-
-  // events
-  $box("askBtn").addEventListener("click", onSearch);
-  $box("routeBtn").addEventListener("click", openRoute);
-  $box("bookSearchBtn").addEventListener("click", onBookingSearch);
-  $box("bookConfirmBtn").addEventListener("click", onBookingConfirm);
-  $box("bookCancelBtn").addEventListener("click", onBookingCancel);
-  initMic();
-
-  // load Maps JS (sa tvojim API ključem) — async loading (best-practice)
-  const s = document.createElement("script");
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${CFG.MAPS_API_KEY}&libraries=places&callback=__tbwMapsReady`;
-  s.async = true; s.defer = true;
-  document.head.appendChild(s);
+  // load Maps
+  const s = document.getElementById('gmaps');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(cfg.MAPS_API_KEY)}&libraries=places&loading=async`;
+  s.onload = init;
 })();
-window.__tbwMapsReady = function(){
-  initMaps();
-};
+
+function setLive(on=true){
+  document.getElementById('liveDot').style.background = on?'#1fdf64':'#ff5a6b';
+  document.getElementById('liveLabel').textContent = 'TBW LIVE';
+}
+
+// INTRO
+function setupIntro(){
+  const el = document.getElementById('intro');
+  const c = document.getElementById('stars'); const ctx = c.getContext('2d');
+  function resize(){ c.width=innerWidth; c.height=innerHeight; }
+  addEventListener('resize',resize); resize();
+  const stars = [...Array(120)].map(()=>({x:Math.random()*c.width,y:Math.random()*c.height,z:Math.random()*1.2+.2}));
+  let comet={x:-100,y:c.height*.25,vx:6,vy:2,ttl:160}, nova={t:0,go:false};
+  (function draw(){
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,c.width,c.height);
+    stars.forEach(s=>{ s.x+=.2*s.z; if(s.x>c.width) s.x=0; ctx.fillStyle=`rgba(180,255,250,${.6*s.z})`; ctx.fillRect(s.x,s.y,1.2*s.z,1.2*s.z);});
+    if(comet.ttl>0){
+      comet.x+=comet.vx; comet.y+=comet.vy; comet.ttl--;
+      for(let i=0;i<30;i++){ ctx.fillStyle=`rgba(0,255,220,${(1-i/30)*.4})`; ctx.fillRect(comet.x-i*4,comet.y-i*2,2,2);}
+      ctx.beginPath(); ctx.arc(comet.x,comet.y,2,0,Math.PI*2); ctx.fillStyle='#7fffe1'; ctx.fill();
+      if(comet.ttl===10){ nova.go=true; nova.t=0; }
+    }
+    if(nova.go){ nova.t++; const r=nova.t*8; ctx.beginPath(); ctx.arc(comet.x,comet.y,r,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,255,255,${1-nova.t/30})`; ctx.lineWidth=2; ctx.stroke(); if(nova.t>30) nova.go=false; }
+    requestAnimationFrame(draw);
+  })();
+  const audio=document.getElementById('introAudio'); audio.volume=.6; audio.play().catch(()=>{});
+  const kill=()=>{ el.style.opacity=0; setTimeout(()=>el.remove(),320); }
+  setTimeout(kill,5000); document.getElementById('skipIntro').onclick=kill;
+}
+
+let maps, places, navMap, miniMap, trafficMap, sv, dirSvc, dirRend;
+async function init(){
+  setupIntro();
+  setLive(true);
+  loadTicker(); setInterval(loadTicker, 45000);
+
+  // voice
+  if(FEATURES.voiceSearch){
+    const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){ const r=new SR(); r.lang='hr-HR';
+      document.getElementById('micBtn').onclick=()=>r.start();
+      r.onresult=e=>{ document.getElementById('cityInput').value=e.results[0][0].transcript; doSearch(); };
+    }
+  }
+
+  // maps
+  maps = google.maps;
+  places = new maps.places.PlacesService(document.createElement('div'));
+  dirSvc = new maps.DirectionsService();
+  dirRend = new maps.DirectionsRenderer();
+
+  navMap = new maps.Map(document.getElementById('navMap'), {center:{lat:45.8,lng:15.97},zoom:6,mapId:'TBW_NAV'});
+  dirRend.setMap(navMap);
+
+  miniMap = new maps.Map(document.getElementById('miniMap'), {center:{lat:44.7,lng:15.8},zoom:6});
+  trafficMap = new maps.Map(document.getElementById('trafficMap'), {center:{lat:45.3,lng:15.7},zoom:7});
+  new maps.TrafficLayer().setMap(trafficMap);
+
+  sv = new maps.StreetViewPanorama(document.getElementById('streetView'), {
+    position:{lat:43.5081,lng:16.4402}, pov:{heading:34,pitch:0}, zoom:1
+  });
+
+  document.getElementById('askBtn').onclick = doSearch;
+  document.getElementById('routeBtn').onclick = makeRoute;
+  document.getElementById('searchHotel').onclick = searchHotels;
+  document.getElementById('bookNow').onclick = ()=>alert('Demo rezervacija – odaberi smještaj iz liste.');
+  document.getElementById('cancelSel').onclick = ()=>alert('Demo otkazivanje.');
+
+  // toggle chips
+  document.querySelectorAll('.chip[data-layer]').forEach(ch=>{
+    ch.onclick = ()=> ch.classList.toggle('sel');
+  });
+
+  // RDS SSE
+  if(FEATURES.rdsTraffic) startRDS();
+
+  doSearch();
+}
+
+function startRDS(){
+  const es = new EventSource(`${CFG.API_BASE_URL}/api/traffic/stream`);
+  es.onmessage = (e)=>{
+    try{
+      const data = JSON.parse(e.data||'{}');
+      if(data?.type==='rds'){
+        const t = document.getElementById('ticker').textContent;
+        document.getElementById('ticker').textContent = `${data.event.msg} • ${t}`;
+      }
+    }catch{}
+  };
+  es.onerror = ()=> setLive(false);
+}
+
+async function loadTicker(){
+  const city = (document.getElementById('cityInput').value||'Hrvatska').trim();
+  try{
+    const d = await (await fetch(`${CFG.API_BASE_URL}/api/alerts?city=${encodeURIComponent(city)}`)).json();
+    const msgs = (d.alerts||[]).map(a=>a.message);
+    if(msgs.length){
+      let i=0;
+      document.getElementById('ticker').textContent = msgs[0];
+      clearInterval(window.__tick);
+      window.__tick = setInterval(()=>{
+        i=(i+1)%msgs.length;
+        document.getElementById('ticker').textContent = msgs[i];
+      }, 4500);
+    }
+    setLive(true);
+  }catch{
+    setLive(false);
+  }
+}
+
+async function doSearch(){
+  const q = (document.getElementById('cityInput').value||'Split').trim();
+  document.getElementById('hotelCity').value = q;
+
+  // weather
+  (async ()=>{
+    const box = document.getElementById('weatherBox'); box.innerHTML='Učitavanje…';
+    try{
+      const d = await (await fetch(`${CFG.API_BASE_URL}/api/weather?city=${encodeURIComponent(q)}`)).json();
+      const t = Math.round(d?.main?.temp ?? 17);
+      const desc = d?.weather?.[0]?.description || '-';
+      box.innerHTML = `<div style="font-size:2rem;font-weight:800">${t}°C</div><div>${q} • ${desc}</div>`;
+    }catch{ box.innerHTML='Nedostupno.'; }
+  })();
+
+  // photos
+  (async ()=>{
+    const wrap = document.getElementById('photosStrip'); wrap.innerHTML='';
+    try{
+      const d = await (await fetch(`${CFG.API_BASE_URL}/api/photos?q=${encodeURIComponent(q)}`)).json();
+      (d.results||[]).slice(0,6).forEach(p=>{
+        const img = document.createElement('img'); img.src = p.urls?.small || p.urls?.thumb; img.loading='lazy'; wrap.appendChild(img);
+      });
+    }catch{ wrap.innerHTML='-'; }
+  })();
+
+  // poi
+  (async ()=>{
+    const box = document.getElementById('poiBox'); box.innerHTML='';
+    try{
+      const d = await (await fetch(`${CFG.API_BASE_URL}/api/poi?city=${encodeURIComponent(q)}`)).json();
+      (d.items||[]).forEach(i=>{
+        const el=document.createElement('div'); el.className='item';
+        el.innerHTML=`<strong>${i.name}</strong><br><span style="opacity:.8">${i.short||''}</span>`;
+        el.onclick=()=>{
+          if(i.lat&&i.lon){ const pos={lat:i.lat,lng:i.lon}; navMap.setCenter(pos); navMap.setZoom(15); sv.setPosition(pos); }
+        };
+        box.appendChild(el);
+      });
+    }catch{ box.innerHTML='-'; }
+  })();
+
+  // sea
+  (async ()=>{
+    const sb=document.getElementById('seaBox'); sb.innerHTML='Učitavanje…';
+    try{
+      const d = await (await fetch(`${CFG.API_BASE_URL}/api/sea?city=${encodeURIComponent(q)}`)).json();
+      sb.innerHTML = `<div style="font-size:1.6rem;font-weight:800">${d.seaTemp}°C</div><div>${d.text}</div>`;
+    }catch{ sb.innerHTML='-'; }
+  })();
+
+  // center maps & streetview
+  geocode(q).then(pos=>{
+    if(pos){ navMap.setCenter(pos); navMap.setZoom(12); miniMap.setCenter(pos); miniMap.setZoom(9); sv.setPosition(pos); }
+  });
+}
+
+function geocode(q){
+  return new Promise(res=>{
+    const gc = new google.maps.Geocoder();
+    gc.geocode({address:q},(r,st)=> st==='OK'&&r[0]?res(r[0].geometry.location.toJSON()):res(null));
+  });
+}
+
+function makeRoute(){
+  const from = document.getElementById('routeFrom').value.trim();
+  const to = document.getElementById('routeTo').value.trim();
+  if(!to) return alert('Unesite odredište.');
+  dirSvc.route({origin:from||navMap.getCenter(), destination:to, travelMode:'DRIVING'})
+    .then(r=>dirRend.setDirections(r)).catch(()=>alert('Ruta nije pronađena.'));
+}
+
+async function searchHotels(){
+  const city = document.getElementById('hotelCity').value.trim() || 'Split';
+  const grid = document.getElementById('hotelResults'); grid.innerHTML='Pretraga…';
+  try{
+    const d = await (await fetch(`${CFG.API_BASE_URL}/api/hotels/search?city=${encodeURIComponent(city)}`)).json();
+    grid.innerHTML='';
+    (d.items||[]).forEach(p=>{
+      const div=document.createElement('div'); div.className='hotel';
+      div.innerHTML=`<div class="meta"><strong>${p.name}</strong><span>${p.address||city}</span></div><div class="price">${p.price}</div>`;
+      div.onclick=()=>{ if(p.lat&&p.lng){ const pos={lat:p.lat,lng:p.lng}; navMap.setCenter(pos); navMap.setZoom(14); sv.setPosition(pos);} };
+      grid.appendChild(div);
+    });
+    if(!grid.children.length) grid.textContent='Nema rezultata.';
+  }catch{ grid.textContent='Greška pri pretrazi.'; }
+}
