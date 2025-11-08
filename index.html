@@ -1,22 +1,25 @@
-<!-- redeploy-fix-1 -->
 <!doctype html>
 <html lang="hr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>TBW AI PREMIUM</title>
 
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#001a28" />
+  <meta name="theme-color" content="#00161f" />
   <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
-
   <link rel="stylesheet" href="/style.css" />
+
+  <!-- Google Maps (key se dodaje dinamički iz config.json u app.js) -->
+  <script>/* placeholder, stvarni <script src=...> ubacuje app.js */</script>
 </head>
 <body>
-  <!-- Intro overlay (5 sec) -->
-  <div id="introOverlay" class="intro">
-    <div class="intro-inner">
+  <!-- Intro (5s) — zvijezde + komet + supernova -->
+  <div id="intro" class="intro">
+    <canvas id="stars"></canvas>
+    <canvas id="comet"></canvas>
+    <div class="intro-center">
       <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
       <div class="intro-title">TBW AI PREMIUM</div>
       <div class="intro-sub">Smart Concierge • Hrvatska</div>
@@ -25,30 +28,30 @@
     <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
   </div>
 
-  <!-- Alert ticker -->
-  <div id="topBar" class="topbar">
+  <!-- Top bar (fiksno) -->
+  <div class="topbar">
     <div class="topbar-inner">
-      <strong id="alertLabel">Live Alerts:</strong>
+      <strong>Prometna upozorenja • Vrijeme • Stanje mora • Nesreće • Rezervacije • Alert!</strong>
       <span id="alertsTicker" class="ticker"></span>
     </div>
   </div>
 
-  <!-- Header -->
+  <!-- Header (fiksno) -->
   <header class="header">
     <div class="brand">
       <img src="/assets/TBW.png" alt="TBW" />
       <h1>TBW AI PREMIUM</h1>
     </div>
     <div class="search">
-      <input id="cityInput" type="text" placeholder="Split, Zagreb…" />
+      <input id="cityInput" type="text" placeholder="Split, Zadar, Zagreb…" />
       <button id="askBtn" class="btn">Traži</button>
       <span id="backendDot" class="dot" title="Backend status"></span>
     </div>
   </header>
 
-  <!-- GRID -->
+  <!-- Glavni sadržaj (samo vertikalni scroll) -->
   <main class="grid">
-    <!-- Navigation -->
+    <!-- 1. red: Navigacija • Rezervacije • Street View -->
     <section class="card">
       <h2>Navigacija</h2>
       <div id="navMap" class="map"></div>
@@ -57,82 +60,45 @@
         <input id="routeTo" class="input" placeholder="Odredište" />
         <button id="routeBtn" class="btn sm">Rutu</button>
       </div>
+      <div class="row wrap chips" id="rdsChips">
+        <!-- RDS/AI prometne značke (dinamički) -->
+      </div>
     </section>
 
-    <!-- Hotels -->
     <section class="card">
       <h2>Rezervacija smještaja</h2>
       <div class="row gap">
-        <div class="col">
-          <label>Lokacija</label>
-          <input id="hotelCity" class="input" placeholder="Split" />
-        </div>
-        <div class="col">
-          <label>Dolazak</label>
-          <input id="arrive" type="date" class="input" />
-        </div>
-        <div class="col">
-          <label>Odlazak</label>
-          <input id="depart" type="date" class="input" />
-        </div>
-        <div class="col">
-          <label>Gosti</label>
-          <input id="guests" type="number" value="2" min="1" class="input" />
-        </div>
+        <div class="col"><label>Lokacija</label><input id="hotelCity" class="input" placeholder="Split" /></div>
+        <div class="col"><label>Dolazak</label><input id="arrive" class="input" type="date" /></div>
+        <div class="col"><label>Odlazak</label><input id="depart" class="input" type="date" /></div>
+        <div class="col"><label>Gosti</label><input id="guests" class="input" type="number" min="1" value="2" /></div>
       </div>
       <div class="row between">
-        <div class="tags">
-          <span>🚘 Parking</span><span>🍳 Doručak</span><span>👨‍👩‍👧‍👦 Obitelj</span>
-        </div>
+        <div class="tags"><span>🚘 Parking</span><span>🍳 Doručak</span><span>👨‍👩‍👧‍👦 Obitelj</span></div>
         <button id="bookBtn" class="btn">Pretraži</button>
       </div>
       <div id="hotelResults" class="list"></div>
     </section>
 
-    <!-- Street View -->
     <section class="card">
       <h2>Street View</h2>
       <div id="streetView" class="street"></div>
     </section>
 
-    <!-- Weather -->
-    <section class="card">
-      <h2>Vrijeme</h2>
-      <div id="weatherBox" class="weather"></div>
-    </section>
-
-    <!-- Traffic -->
-    <section class="card">
-      <h2>Promet uživo</h2>
-      <div id="trafficMap" class="map"></div>
-    </section>
-
-    <!-- Sea -->
-    <section class="card">
-      <h2>Stanje mora</h2>
-      <div id="seaBox" class="sea"></div>
-    </section>
-
-    <!-- POI -->
-    <section class="card">
-      <h2>Znamenitosti</h2>
-      <div id="poiBox" class="poi"></div>
-    </section>
-
-    <!-- Mini Map -->
-    <section class="card">
-      <h2>Karta</h2>
-      <div id="miniMap" class="map"></div>
-    </section>
+    <!-- 2. red: Vrijeme • Promet uživo • Stanje mora • Znamenitosti • Karta -->
+    <section class="card"><h2>Vrijeme</h2><div id="weatherBox" class="weather"></div></section>
+    <section class="card"><h2>Promet uživo</h2><div id="trafficMap" class="map"></div></section>
+    <section class="card"><h2>Stanje mora</h2><div id="seaBox" class="sea"></div></section>
+    <section class="card"><h2>Znamenitosti</h2><div id="poiBox" class="poi"></div></section>
+    <section class="card"><h2>Karta</h2><div id="miniMap" class="map"></div></section>
   </main>
 
-  <!-- Chat -->
-  <footer class="footer">
-    <div class="chat">
-      <input id="assistantInput" class="input" placeholder="Postavi pitanje…" />
-      <button id="sendBtn" class="btn">Pošalji</button>
+  <!-- Footer (sigurnost + prava) -->
+  <footer class="footer-legal">
+    <div class="badges">
+      <span>🔒 TLS 1.3</span><span>🛡️ CSP</span><span>✅ PWA</span><span>⚠️ Rate-limit</span>
     </div>
-    <div id="messages" class="messages"></div>
+    <div class="copy">© <span id="year"></span> TBW AI PREMIUM — Sva prava pridržana.</div>
   </footer>
 
   <script src="/app.js" defer></script>
