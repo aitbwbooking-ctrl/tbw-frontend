@@ -10,29 +10,29 @@
   <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
   <link rel="stylesheet" href="/style.css" />
-
-  <!-- Google Maps (key se dodaje dinamički iz config.json u app.js) -->
-  <script>/* placeholder, stvarni <script src=...> ubacuje app.js */</script>
 </head>
 <body>
-  <!-- Intro (5s) — zvijezde + komet + supernova -->
-  <div id="intro" class="intro">
+
+  <!-- INTRO (Warp + Comet + Supernova + Voice) -->
+  <div id="intro" class="intro" aria-hidden="true">
     <canvas id="stars"></canvas>
-    <canvas id="comet"></canvas>
+    <canvas id="fx"></canvas>
     <div class="intro-center">
       <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
       <div class="intro-title">TBW AI PREMIUM</div>
-      <div class="intro-sub">Smart Concierge • Hrvatska</div>
-      <button id="skipIntro" class="btn ghost">Preskoči</button>
+      <div class="intro-sub">Travel Concierge & Safety Intelligence</div>
+      <button id="skipIntro" class="btn ghost" type="button">Preskoči</button>
     </div>
-    <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
+    <!-- Kratki “whoosh” (ugrađen base64) -->
+    <audio id="introAudio" preload="auto"
+      src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA...AAA"> </audio>
   </div>
 
-  <!-- Top bar (fiksno) -->
+  <!-- Top ticker (fiksno) -->
   <div class="topbar">
     <div class="topbar-inner">
-      <strong>Prometna upozorenja • Vrijeme • Stanje mora • Nesreće • Rezervacije • Alert!</strong>
-      <span id="alertsTicker" class="ticker"></span>
+      <strong>TBW LIVE</strong>
+      <span id="alertsTicker" class="ticker">Učitavam…</span>
     </div>
   </div>
 
@@ -51,18 +51,16 @@
 
   <!-- Glavni sadržaj (samo vertikalni scroll) -->
   <main class="grid">
-    <!-- 1. red: Navigacija • Rezervacije • Street View -->
+    <!-- PRVI RED: Navigacija • Rezervacija • Street View -->
     <section class="card">
       <h2>Navigacija</h2>
-      <div id="navMap" class="map"></div>
+      <div id="navMap" class="map" role="region" aria-label="Karta"></div>
       <div class="row gap">
         <input id="routeFrom" class="input" placeholder="Polazište (opcionalno)" />
         <input id="routeTo" class="input" placeholder="Odredište" />
-        <button id="routeBtn" class="btn sm">Rutu</button>
+        <button id="routeBtn" class="btn sm" type="button">Ruta</button>
       </div>
-      <div class="row wrap chips" id="rdsChips">
-        <!-- RDS/AI prometne značke (dinamički) -->
-      </div>
+      <div class="row wrap chips" id="rdsChips"></div>
     </section>
 
     <section class="card">
@@ -75,29 +73,27 @@
       </div>
       <div class="row between">
         <div class="tags"><span>🚘 Parking</span><span>🍳 Doručak</span><span>👨‍👩‍👧‍👦 Obitelj</span></div>
-        <button id="bookBtn" class="btn">Pretraži</button>
+        <button id="bookBtn" class="btn" type="button">Pretraži</button>
       </div>
       <div id="hotelResults" class="list"></div>
     </section>
 
     <section class="card">
       <h2>Street View</h2>
-      <div id="streetView" class="street"></div>
+      <div id="streetView" class="street" role="region" aria-label="Street View"></div>
     </section>
 
-    <!-- 2. red: Vrijeme • Promet uživo • Stanje mora • Znamenitosti • Karta -->
-    <section class="card"><h2>Vrijeme</h2><div id="weatherBox" class="weather"></div></section>
+    <!-- DRUGI RED: Vrijeme • Promet • More • Znamenitosti • Karta -->
+    <section class="card"><h2>Vrijeme</h2><div id="weatherBox" class="weather">–</div></section>
     <section class="card"><h2>Promet uživo</h2><div id="trafficMap" class="map"></div></section>
-    <section class="card"><h2>Stanje mora</h2><div id="seaBox" class="sea"></div></section>
+    <section class="card"><h2>Stanje mora</h2><div id="seaBox" class="sea">–</div></section>
     <section class="card"><h2>Znamenitosti</h2><div id="poiBox" class="poi"></div></section>
-    <section class="card"><h2>Karta</h2><div id="miniMap" class="map"></div></section>
+    <section class="card"><h2>Karta (pregled)</h2><div id="miniMap" class="map"></div></section>
   </main>
 
   <!-- Footer (sigurnost + prava) -->
   <footer class="footer-legal">
-    <div class="badges">
-      <span>🔒 TLS 1.3</span><span>🛡️ CSP</span><span>✅ PWA</span><span>⚠️ Rate-limit</span>
-    </div>
+    <div class="badges"><span>🔒 TLS 1.3</span><span>🛡️ CSP</span><span>✅ PWA</span><span>⚠️ Rate-limit</span></div>
     <div class="copy">© <span id="year"></span> TBW AI PREMIUM — Sva prava pridržana.</div>
   </footer>
 
