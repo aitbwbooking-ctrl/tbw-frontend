@@ -6,75 +6,78 @@
   <title>TBW AI PREMIUM</title>
 
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#001a28" />
+  <meta name="theme-color" content="#07131a" />
   <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
+
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- Intro (5s) sa zvjezdicama + zvukom -->
-  <div id="intro" class="intro hidden">
+
+  <!-- INTRO (zvijezde + komet + zvuk) -->
+  <div id="intro" class="intro-wrap">
     <canvas id="stars"></canvas>
     <div class="intro-center">
       <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
       <div class="intro-title">TBW AI PREMIUM</div>
       <div class="intro-sub">Smart Concierge • Hrvatska</div>
-      <button id="skipIntro" class="btn ghost">Preskoči</button>
+      <button id="introBtn" class="btn ghost">Prekoči</button>
     </div>
     <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
   </div>
 
-  <!-- Top upozorenja (fiksno) -->
-  <div id="topbar" class="topbar">
-    <div class="topbar-inner">
-      <strong>TBW LIVE</strong>
-      <span class="live-dot"></span>
-      <span id="ticker" class="ticker">Učitavam upozorenja…</span>
-    </div>
-  </div>
-
-  <!-- Header (fiksno) -->
-  <header class="header">
-    <div class="brand">
+  <!-- GORNJI BAR -->
+  <div class="topbar">
+    <div class="tbw">
       <img src="/assets/TBW.png" alt="TBW" />
-      <h1>TBW AI PREMIUM <span class="badge">LIVE</span></h1>
+      <span class="brand">TBW AI PREMIUM</span>
+      <span class="live">LIVE</span>
     </div>
-    <div class="search">
-      <input id="q" type="text" placeholder="Split apartmani / Zadar plaže / 'Ruta Karlovac – Zagreb'…" />
-      <button id="micBtn" class="icon" title="Govor"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2Zm-5 7v3h-2v-3h2Z"/></svg></button>
+
+    <div class="searchbar">
+      <button id="voiceBtn" class="icon" title="Glasovno pretraživanje">🎤</button>
+      <input id="globalQuery" type="text" placeholder="Split apartmani • Najbolja plaža • Ruta do Zadra…" />
       <button id="searchBtn" class="btn">Traži</button>
       <span id="backendDot" class="dot" title="Backend status"></span>
     </div>
-  </header>
+  </div>
 
-  <!-- Glavni grid (kompaktni manji prozori, samo vertikalni scroll) -->
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <span class="label">TBW LIVE</span>
+    <div class="ticker" id="alertsTicker">Učitavanje obavijesti…</div>
+  </div>
+
+  <!-- GRID 3 x 3 (mob: 1 kolona) -->
   <main class="grid">
-    <!-- 1. red -->
-    <section class="card" id="card-nav">
+
+    <!-- 1 Navigacija -->
+    <section class="card">
       <h2>Navigacija</h2>
       <div id="navMap" class="map"></div>
-      <div class="row gap mt">
+      <div class="row gap">
         <input id="routeFrom" class="input" placeholder="Polazište (opcionalno)" />
         <input id="routeTo" class="input" placeholder="Odredište" />
         <button id="routeBtn" class="btn sm">Rutu</button>
       </div>
-      <div class="chipbar">
-        <button class="chip" data-layer="speedcams">Radar</button>
-        <button class="chip" data-layer="incidents">Nesreće</button>
-        <button class="chip" data-layer="works">Radovi</button>
-        <button class="chip" data-layer="parking">Parking</button>
-        <button class="chip" data-layer="ev">Punjačnice</button>
-        <button class="chip" data-layer="shops">Trgovine</button>
-        <button class="chip" data-layer="hospitals">Bolnice</button>
+      <div class="row wrap chips">
+        <button class="chip" data-tag="radar">🚨 Radar</button>
+        <button class="chip" data-tag="nesreca">⛔ Nesreće</button>
+        <button class="chip" data-tag="radovi">🚧 Radovi</button>
+        <button class="chip" data-tag="parking">🅿️ Parking</button>
+        <button class="chip" data-tag="punionice">⚡ Punionice</button>
+        <button class="chip" data-tag="trgovine">🛒 Trgovine</button>
+        <button class="chip" data-tag="bolnice">🏥 Bolnice</button>
       </div>
     </section>
 
-    <section class="card" id="card-book">
+    <!-- 2 Rezervacija -->
+    <section class="card">
       <h2>Rezervacija smještaja</h2>
       <div class="row gap">
         <div class="col">
           <label>Lokacija</label>
-          <input id="hotelCity" class="input" placeholder="Split" />
+          <input id="hotelCity" class="input" placeholder="Split, Zadar…" />
         </div>
         <div class="col">
           <label>Dolazak</label>
@@ -85,11 +88,9 @@
           <input id="depart" class="input" type="date" />
         </div>
       </div>
-      <div class="row between mt">
-        <div class="chipbar">
-          <span class="chip toggle" data-tag="parking">🚘 Parking</span>
-          <span class="chip toggle" data-tag="breakfast">🍳 Doručak</span>
-          <span class="chip toggle" data-tag="family">👨‍👩‍👧‍👦 Obitelj</span>
+      <div class="row between">
+        <div class="tags">
+          <span>🅿️ Parking</span><span>🍳 Doručak</span><span>👨‍👩‍👧‍👦 Obitelj</span>
         </div>
         <div class="row gap">
           <button id="bookSearch" class="btn">Pretraži</button>
@@ -97,56 +98,62 @@
           <button id="bookCancel" class="btn danger">Otkaži</button>
         </div>
       </div>
-      <div id="hotelResults" class="list mt"></div>
+      <div id="hotelResults" class="list"></div>
     </section>
 
-    <section class="card" id="card-street">
+    <!-- 3 Street View -->
+    <section class="card">
       <h2>Street View</h2>
-      <div id="streetView" class="street"></div>
+      <div id="street" class="street"></div>
     </section>
 
-    <!-- 2. red -->
-    <section class="card" id="card-weather">
+    <!-- 4 Vrijeme • more • zrak -->
+    <section class="card">
       <h2>Vrijeme • more • zrak</h2>
-      <div id="weatherBox" class="weather"></div>
+      <div id="wxBox" class="wx"></div>
     </section>
 
-    <section class="card" id="card-traffic">
+    <!-- 5 Promet uživo -->
+    <section class="card">
       <h2>Promet uživo</h2>
-      <div id="trafficMap" class="map"></div>
+      <div id="traffic" class="map"></div>
     </section>
 
-    <section class="card" id="card-photos">
+    <!-- 6 Fotografije -->
+    <section class="card">
       <h2>Fotografije</h2>
-      <div id="photoStrip" class="photos"></div>
+      <div id="photos" class="photos"></div>
     </section>
 
-    <!-- 3. red -->
-    <section class="card" id="card-poi">
+    <!-- 7 Znamenitosti -->
+    <section class="card">
       <h2>Znamenitosti</h2>
       <div id="poiBox" class="poi"></div>
     </section>
 
-    <section class="card" id="card-mini">
+    <!-- 8 Karta (pregled) -->
+    <section class="card">
       <h2>Karta (pregled)</h2>
-      <div id="miniMap" class="map"></div>
+      <div id="mini" class="map"></div>
     </section>
 
-    <section class="card" id="card-services">
+    <!-- 9 Servisi & hitne službe -->
+    <section class="card">
       <h2>Dostupni servisi & hitne službe</h2>
-      <div id="servicesBox" class="list"></div>
+      <div id="services" class="services"></div>
     </section>
+
   </main>
 
-  <!-- Footer sigurnost -->
-  <footer class="site-foot">
-    <div class="shields">
-      <span>🔐 TLS 1.3</span>
-      <span>🛡️ CSP</span>
-      <span>📱 PWA</span>
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="protections">
+      <span>🛡️ TLS 1.3</span>
+      <span>🧩 CSP</span>
+      <span>📦 PWA</span>
       <span>⏱️ Rate-limit</span>
     </div>
-    <small>© 2025 TBW AI PREMIUM — Sva prava pridržana.</small>
+    <div class="rights">© 2025 TBW AI PREMIUM — Sva prava pridržana.</div>
   </footer>
 
   <script src="/app.js" defer></script>
