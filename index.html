@@ -1,33 +1,179 @@
-<!-- TBW APEX INTRO -->
-<div id="tbw-intro" aria-hidden="true">
-  <canvas id="tbw-intro-particles"></canvas>
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>TBW AI PREMIUM</title>
 
-  <div class="tbw-intro-hud">
-    <div class="tbw-logo-wrap">
-      <div class="tbw-logo-ring"></div>
-      <img class="tbw-logo" src="assets/icons/TBW.png" alt="TBW" />
-    </div>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/assets/icons/favicon.ico">
+  <meta name="theme-color" content="#0b1220" />
 
-    <h1 class="tbw-intro-title">TBW AI PREMIUM</h1>
-    <p class="tbw-intro-sub">Initializing Smart Concierge & Navigation</p>
+  <!-- PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
 
-    <div class="tbw-intro-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <span class="tbw-meter-fill"></span>
-    </div>
-
-    <div class="tbw-intro-hints">
-      <span>AI • Navigacija • Vrijeme • Promet • Rezervacije</span>
-    </div>
-
-    <div class="tbw-intro-ctl">
-      <button id="tbw-intro-skip" class="tbw-ghost">Skip ⏭</button>
-      <button id="tbw-intro-mute" class="tbw-ghost" aria-pressed="false">🔊</button>
+  <link rel="preload" href="/assets/sounds/intro.mp3" as="audio">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Intro / Splash -->
+  <div id="intro" class="intro">
+    <div class="intro-inner">
+      <img src="/assets/icons/tbw-neon.png" alt="TBW" class="intro-logo" />
+      <h1>TBW AI PREMIUM</h1>
+      <p>Initializing Smart Concierge &amp; Navigation</p>
+      <button id="skipIntro" class="btn ghost">Skip ⏭</button>
+      <audio id="introSnd" src="/assets/sounds/intro.mp3" preload="auto"></audio>
     </div>
   </div>
 
-  <!-- zvuk: koristi tvoj već postojeći intro u assets/sounds/intro.mp3 -->
-  <audio id="tbw-intro-audio" preload="auto">
-    <source src="assets/sounds/intro.mp3" type="audio/mpeg" />
-  </audio>
-</div>
-<!-- /TBW APEX INTRO -->
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/assets/icons/tbw-neon.png" alt="TBW" />
+      <span>TBW AI PREMIUM</span>
+      <span class="pill live">LIVE</span>
+    </div>
+
+    <!-- Global search (unutar trake, s tipkom Traži) -->
+    <form id="globalSearch" class="search">
+      <input id="q" type="search" placeholder="Split apartmani • ‘Ruta do Zadra’ • ‘Najbliži HEP’…" />
+      <button type="submit" class="btn">Traži</button>
+      <button id="mic" type="button" class="btn mic" title="Glasovno"><span>🎤</span></button>
+    </form>
+  </header>
+
+  <!-- Pokretna traka upozorenja / info -->
+  <div class="ticker-wrap">
+    <div id="ticker" class="ticker"></div>
+    <div class="led" id="led"></div>
+  </div>
+
+  <!-- Lokacija -->
+  <div class="location">
+    <input id="city" type="text" placeholder="Upišite grad (npr. Split, Karlovac)"/>
+    <button id="applyCity" class="btn">Primijeni</button>
+  </div>
+
+  <!-- GRID KARTICA (fiksne) -->
+  <main class="grid">
+    <!-- Navigacija -->
+    <section class="card" data-card="nav">
+      <div class="card-head">
+        <h3>Navigacija</h3>
+        <div class="actions">
+          <button class="btn ghost" id="exitNav">EXIT</button>
+          <button class="btn ghost" id="trafficBtn">Promet</button>
+          <button class="btn ghost expand">Max</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="map" class="map"></div>
+        <div class="row">
+          <input id="from" placeholder="Polazište (opcionalno)" />
+          <input id="to" placeholder="Odredište" />
+          <button id="go" class="btn primary">GO</button>
+        </div>
+
+        <!-- Hitne & Servisi (Google Places + TomTom fallback) -->
+        <div class="chips" id="serviceChips">
+          <button data-type="hospital">🏥 Bolnice</button>
+          <button data-type="pharmacy">💊 Ljekarne</button>
+          <button data-type="police">🚓 Policija</button>
+          <button data-type="fire_station">🔥 Vatrogasci</button>
+          <button data-type="gas_station">⛽ Punionice</button>
+          <button data-type="supermarket">🛒 Trgovine</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rezervacija -->
+    <section class="card" data-card="booking">
+      <div class="card-head">
+        <h3>Rezervacija smještaja</h3>
+        <button class="btn ghost expand">Max</button>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <input id="stayCity" placeholder="Lokacija (Split / Zadar…)" />
+          <input id="checkin" type="date">
+          <input id="checkout" type="date">
+          <select id="guests">
+            <option value="2">2 gosta</option>
+            <option value="3">3 gosta</option>
+            <option value="4">4 gosta</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="searchStay" class="btn">Pretraži</button>
+          <button id="reserveStay" class="btn primary">Rezerviraj</button>
+          <button id="cancelStay" class="btn danger">Otkaži</button>
+        </div>
+        <p class="hint">Otvorit će Booking, Expedia, Airbnb… s već popunjenim filtrima.</p>
+      </div>
+    </section>
+
+    <!-- Street View -->
+    <section class="card" data-card="sv">
+      <div class="card-head">
+        <h3>Street View</h3>
+        <button class="btn ghost expand">Max</button>
+      </div>
+      <div class="card-body">
+        <div id="pano" class="pano"></div>
+      </div>
+    </section>
+
+    <!-- Vrijeme • more • zrak -->
+    <section class="card" data-card="weather">
+      <div class="card-head">
+        <h3>Vrijeme • more • zrak</h3>
+        <button class="btn ghost expand">Max</button>
+      </div>
+      <div class="card-body">
+        <ul id="wxList" class="list"></ul>
+      </div>
+    </section>
+
+    <!-- Promet uživo -->
+    <section class="card" data-card="traffic">
+      <div class="card-head">
+        <h3>Promet uživo</h3>
+        <button class="btn ghost expand">Max</button>
+      </div>
+      <div class="card-body">
+        <div id="trafficMap" class="map sm"></div>
+      </div>
+    </section>
+
+    <!-- Stanje mora -->
+    <section class="card" data-card="sea">
+      <div class="card-head">
+        <h3>Stanje mora</h3>
+        <button class="btn ghost expand">Max</button>
+      </div>
+      <div class="card-body">
+        <ul id="seaList" class="list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- Fullscreen modal -->
+  <div id="modal" class="modal">
+    <div class="modal-inner">
+      <button id="closeModal" class="btn ghost close">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="/app.js" type="module"></script>
+  <script>
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
