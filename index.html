@@ -2,104 +2,168 @@
 <html lang="hr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
   <title>TBW AI PREMIUM</title>
-  <meta name="theme-color" content="#001519" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
-  <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <meta name="theme-color" content="#0b141a" />
 </head>
 <body>
-  <!-- INTRO -->
-  <div id="intro" class="intro">
-    <canvas id="stars"></canvas>
-    <div class="intro-center">
-      <img src="/assets/TBW.png" class="intro-logo" alt="TBW" />
-      <h1>TBW AI PREMIUM</h1>
-      <p>Smart Concierge • Hrvatska</p>
-      <button id="introSkip" class="btn ghost">Preskoči</button>
-    </div>
-    <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
+  <!-- Ticker (sporo, čitko) -->
+  <div id="ticker" class="ticker" aria-live="polite">
+    <div class="ticker-track" id="tickerTrack">Učitavam obavijesti…</div>
   </div>
 
-  <!-- FIXED TOP -->
-  <div class="topbar">
-    <div class="topbar-inner">
-      <span class="brand">TBW <span class="live">LIVE</span></span>
-      <span id="alertsTicker" class="ticker"><span class="track">Učitavanje…</span></span>
-      <span id="backendDot" class="dot" title="Backend"></span>
-    </div>
-  </div>
-
-  <!-- HEADER -->
+  <!-- Header -->
   <header class="header">
-    <div class="title"><strong>TBW AI PREMIUM</strong><span class="tag">LIVE</span></div>
-    <div class="search">
-      <button id="micBtn" class="icon" title="Drži za glas ili klikni za kontinuirani razgovor">🎤</button>
-      <input id="globalSearch" placeholder="Karlovac… ‘Ruta do Zadra’… ‘Apartmani u Splitu’…" />
+    <div class="brand">
+      <span class="logo">TBW</span>
+      <span class="badge live">LIVE</span>
+    </div>
+
+    <div class="searchbar">
+      <button id="aiBtn" class="chip chip-live" title="AI Concierge">TBW AI PREMIUM</button>
+      <button id="micBtn" class="chip mic" aria-pressed="false" title="Glasovno pretraživanje">🎤</button>
+      <input id="globalSearch" class="search-input" placeholder="Split apartmani" />
       <button id="searchBtn" class="btn">Traži</button>
-      <span id="aiBadge" class="status">ATLAS</span>
+      <span class="status-dot" id="connDot" title="Backend veza"></span>
     </div>
   </header>
 
-  <!-- GRID -->
+  <!-- GRID: 3x2 kao na slici -->
   <main class="grid">
-    <section class="card">
+    <!-- Navigacija -->
+    <section class="card" data-module="navigacija">
       <div class="card-head">
-        <h2>Navigacija</h2>
+        <h3>Navigacija</h3>
+        <div class="actions">
+          <button class="chip danger" data-exit>EXIT</button>
+          <button class="chip" id="trafficToggle">Promet</button>
+          <button class="chip" data-expand>Max</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="map" class="map"></div>
         <div class="row">
-          <button id="navExit" class="btn danger sm" title="Izađi iz navigacije">EXIT</button>
-          <button id="navTraffic" class="chip info">Promet</button>
+          <input id="navFrom" placeholder="Polazište (opcionalno)" />
+          <input id="navTo" placeholder="Odredište" />
+          <button id="routeBtn" class="btn accent">GO</button>
         </div>
       </div>
-      <div id="navMap" class="map"></div>
-      <div class="row gap">
-        <input id="routeFrom" class="input" placeholder="Polazište (opcionalno)" />
-        <input id="routeTo" class="input" placeholder="Odredište" />
-        <button id="routeGo" class="btn sm">GO</button>
-      </div>
-      <div id="navTranscript" class="small" style="opacity:.8;margin-top:6px"></div>
     </section>
 
-    <section class="card">
-      <div class="card-head"><h2>Rezervacija smještaja</h2></div>
-      <div class="row gap">
-        <div class="col"><label>Lokacija</label><input id="hotelCity" class="input" placeholder="Split / Zadar…" /></div>
-        <div class="col"><label>Dolazak</label><input id="arrive" type="date" class="input" /></div>
-        <div class="col"><label>Odlazak</label><input id="depart" type="date" class="input" /></div>
-        <div class="col"><label>Gosti</label><input id="guests" type="number" min="1" value="2" class="input" /></div>
-      </div>
-      <div class="row between">
-        <div class="chips">
-          <button class="chip" data-filter="parking">🚘 Parking</button>
-          <button class="chip" data-filter="breakfast">🍳 Doručak</button>
-          <button class="chip" data-filter="family">👨‍👩‍👧‍👦 Obitelj</button>
-        </div>
-        <div class="row gap">
-          <button id="bookSearch" class="btn">Pretraži</button>
-          <button id="bookReserve" class="btn ok">Rezerviraj</button>
-          <button id="bookCancel" class="btn danger">Otkaži</button>
+    <!-- Rezervacija smještaja -->
+    <section class="card" data-module="smjestaj">
+      <div class="card-head">
+        <h3>Rezervacija smještaja</h3>
+        <div class="actions">
+          <button class="chip" data-expand>Max</button>
         </div>
       </div>
-      <div id="hotelResults" class="list"></div>
-      <div class="row gap partner-links" id="partnerLinks" style="margin-top:8px"></div>
+      <div class="card-body">
+        <div class="row">
+          <input id="stayLocation" placeholder="Split / Zadar…" />
+        </div>
+        <div class="row">
+          <input id="dateArrive" type="date" />
+          <input id="dateLeave" type="date" />
+        </div>
+        <div class="row">
+          <select id="guests">
+            <option value="1">1 gost</option>
+            <option value="2" selected>2 gosta</option>
+            <option value="3">3 gosta</option>
+            <option value="4">4 gosta</option>
+            <option value="5">5+ gostiju</option>
+          </select>
+          <div class="row small-gap">
+            <label class="pill"><input type="checkbox" id="optParking" /> Parking</label>
+            <label class="pill"><input type="checkbox" id="optBreakfast" /> Doručak</label>
+            <label class="pill"><input type="checkbox" id="optFamily" /> Obitelj</label>
+          </div>
+        </div>
+        <div class="row">
+          <button id="staySearch" class="btn">Pretraži</button>
+          <button id="stayBook" class="btn accent">Rezerviraj</button>
+          <button id="stayCancel" class="btn danger">Otkaži</button>
+        </div>
+        <p id="stayHint" class="hint">Otvorit će Booking, Expedia, Airbnb… s već popunjenim filterima.</p>
+      </div>
     </section>
 
-    <section class="card"><div class="card-head"><h2>Street View</h2></div><div id="streetView" class="street"></div></section>
-    <section class="card"><div class="card-head"><h2>Vrijeme • more • zrak</h2></div><div id="wx" class="wx"></div></section>
-    <section class="card"><div class="card-head"><h2>Promet uživo</h2></div><div id="trafficMap" class="map"></div></section>
-    <section class="card"><div class="card-head"><h2>Fotografije</h2></div><div id="photos" class="photos"></div></section>
-    <section class="card"><div class="card-head"><h2>Znamenitosti</h2></div><div id="pois" class="list grid"></div></section>
-    <section class="card"><div class="card-head"><h2>Karta (pregled)</h2></div><div id="miniMap" class="map"></div></section>
-    <section class="card"><div class="card-head"><h2>Servisi & hitne službe</h2></div><div id="services" class="list grid"></div></section>
+    <!-- Street View -->
+    <section class="card" data-module="street">
+      <div class="card-head">
+        <h3>Street View</h3>
+        <div class="actions">
+          <button class="chip" data-expand>Max</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="pano" class="pano">Odaberi lokaciju na karti</div>
+      </div>
+    </section>
+
+    <!-- Vrijeme (zrak + more) -->
+    <section class="card" data-module="vrijeme">
+      <div class="card-head">
+        <h3>Vrijeme • more • zrak</h3>
+        <div class="actions">
+          <button class="chip" data-expand>Max</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul id="weatherList" class="bullets">
+          <!-- dinamički -->
+        </ul>
+      </div>
+    </section>
+
+    <!-- Promet uživo -->
+    <section class="card" data-module="promet">
+      <div class="card-head">
+        <h3>Promet uživo</h3>
+        <div class="actions">
+          <button class="chip" data-expand>Max</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="trafficMini" class="mini-map"></div>
+      </div>
+    </section>
+
+    <!-- Stanje mora -->
+    <section class="card" data-module="more">
+      <div class="card-head">
+        <h3>Stanje mora</h3>
+        <div class="actions">
+          <button class="chip" data-expand>Max</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="seaWrap" class="sea">
+          <div class="sea-big">
+            <div><span class="label">Temp mora</span> <span id="seaTemp">–</span></div>
+            <div><span class="label">Valovi</span> <span id="seaWaves">–</span></div>
+            <div><span class="label">Vjetar</span> <span id="seaWind">–</span></div>
+          </div>
+          <div class="sea-photos" id="seaPhotos"></div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer class="footer">
-    <div class="badges"><span>TLS 1.3</span><span>CSP</span><span>PWA</span><span>Rate-limit</span></div>
-    <div class="rights">© 2025 TBW AI PREMIUM — Sva prava pridržana.</div>
-  </footer>
+  <!-- Fullscreen modal -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">Detalji</h3>
+        <button id="modalClose" class="chip">Zatvori</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
 
-  <script src="/app.js" defer></script>
+  <script src="./app.js" type="module"></script>
 </body>
 </html>
