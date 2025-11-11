@@ -1,33 +1,121 @@
-/* TBW Premium Frontend – single file init
-   - fiksne kartice + fullscreen
-   - ticker (promet, vrijeme, shopovi, upozorenja)
-   - Google Maps (mapa, traffic layer, street view)
-   - Booking otvaranje s filtrima
-   - fallback kad API ne odgovori
+/* TBW Premium – full frontend init
+   - Cinematic intro (5s): svemir + komet + supernova + logo
+   - Ticker (promet/alerts/shops/vrijeme) auto refresh
+   - Google Maps (mapa, traffic layer, street view, places chips)
+   - Booking deep links
+   - Fullscreen kartice
+   - STT mikrofon (browser) – hr-HR
+   - PWA ready (sw.js & manifest.json već u projektu)
 */
 
 const STATE = {
   city: "Zagreb",
+  base: "https://tbw-backend.vercel.app",
   cfg: null,
-  maps: { map:null, traffic:null, street:null },
-  base: "https://tbw-backend.vercel.app"
+  maps: { map:null, traffic:null, street:null }
 };
+const qs = (s, el=document)=>el.querySelector(s);
+const qsa= (s, el=document)=>[...el.querySelectorAll(s)];
 
-const qs = (s,el=document)=>el.querySelector(s);
-const qsa= (s,el=document)=>[...el.querySelectorAll(s)];
-
+/* ---------- CONFIG ---------- */
 async function loadConfig(){
   try{
     const cfg = await (await fetch('/config.json')).json();
     STATE.cfg = cfg;
     if (cfg.API_BASE_URL) STATE.base = cfg.API_BASE_URL.replace(/\/$/,'');
-  }catch(e){ /* keep default */ }
+  }catch(_){}
 }
 
-function setLiveDot(ok){ qs('#statusDot').style.background = ok ? '#43d27f' : '#f43f5e'; }
+/* ---------- INTRO CINEMATIC (5s) ---------- */
+function runIntro(){
+  const wrap  = qs('#intro');
+  const logo  = qs('#logoReveal');
+  const audio = qs('#introAudio');
+  const canvas = qs('#spaceCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize(); addEventListener('resize', resize);
+
+  // zvijezde
+  const stars = [];
+  for (let i=0;i<260;i++){
+    stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, z:Math.random()*canvas.width });
+  }
+  // komet
+  const comet = { x:-160, y:canvas.height*0.55, vx:10, tail:[] };
+
+  let t = 0, supernova = false;
+  function frame(){
+    t++;
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // titranje zvijezda (warp efekt)
+    stars.forEach(st=>{
+      st.z -= 3;
+      if (st.z <= 0) st.z = canvas.width;
+      const k = 128.0 / st.z;
+      const px = (st.x - canvas.width/2) * k + canvas.width/2;
+      const py = (st.y - canvas.height/2) * k + canvas.height/2;
+      if (px>=0 && px<=canvas.width && py>=0 && py<=canvas.height){
+        const size = (1 - st.z / canvas.width) * 2;
+        ctx.fillStyle = "#ffffffcc";
+        ctx.fillRect(px, py, size, size);
+      }
+    });
+
+    // komet + zlatne čestice
+    if (!supernova){
+      comet.x += comet.vx;
+      comet.tail.push({x: comet.x, y: comet.y});
+      if (comet.tail.length > 60) comet.tail.shift();
+
+      for (let i=0;i<comet.tail.length;i++){
+        const p = comet.tail[i];
+        ctx.fillStyle = `rgba(255,215,120,${i/60})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.fillStyle = "#ffde8a";
+      ctx.beginPath(); ctx.arc(comet.x, comet.y, 7, 0, Math.PI*2); ctx.fill();
+    }
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // zvuk (pusti tiho; neke browsere traže gesture)
+  audio.volume = 0.7;
+  audio.play().catch(()=>{ /* ignoriraj blokadu */ });
+
+  // nakon ~3.5s supernova, logo fade-in
+  setTimeout(()=>{
+    supernova = true;
+    // eksplozija repa:
+    for (let i=0;i<260;i++){
+      comet.tail.push({
+        x: comet.x + (Math.random()-0.5)*520,
+        y: comet.y + (Math.random()-0.5)*520
+      });
+    }
+    logo.style.opacity = 1;
+  }, 3500);
+
+  // izlaz u app poslije ~5s
+  setTimeout(()=>{
+    wrap.style.opacity = 0;
+    setTimeout(()=>{
+      wrap.remove();
+      qs('#app').classList.remove('hidden');
+    }, 900);
+  }, 5000);
+}
 
 /* ---------- GOOGLE MAPS ---------- */
-function loadGoogle(cb){
+function injectGoogle(cb){
   if (window.google?.maps) return cb();
   const key = STATE.cfg?.MAPS_API_KEY?.trim();
   const s=document.createElement('script');
@@ -40,14 +128,13 @@ function initMaps(){
   const mapEl=qs('#map');
   STATE.maps.map = new google.maps.Map(mapEl,{center:{lat:45.815, lng:15.9819},zoom:7,disableDefaultUI:false,mapTypeControl:false,streetViewControl:false});
   STATE.maps.traffic = new google.maps.TrafficLayer();
-  STATE.maps.traffic.setMap(null); // off by default
+  STATE.maps.traffic.setMap(null);
 
   const streetEl=qs('#street');
   STATE.maps.street = new google.maps.StreetViewPanorama(streetEl,{
     position:{lat:45.492, lng:15.555}, pov:{heading:34,pitch:10}, zoom:1
   });
 
-  // GO routing (uses Google Directions via gmaps URL – univerzalno)
   qs('#btnGo').addEventListener('click',()=>{
     const s = qs('#startInput').value.trim();
     const e = qs('#endInput').value.trim();
@@ -56,13 +143,11 @@ function initMaps(){
     window.open(url,'_blank');
   });
 
-  // Traffic toggle
   qs('#btnTraffic').addEventListener('click',()=>{
     const on = STATE.maps.traffic.getMap();
     STATE.maps.traffic.setMap(on?null:STATE.maps.map);
   });
 
-  // Quick service chips -> search on map
   qsa('.chip').forEach(ch=>{
     ch.addEventListener('click',()=>{
       const what = ch.dataset.l;
@@ -80,7 +165,6 @@ function initMaps(){
     });
   });
 
-  // EXIT nav clears inputs
   qs('#btnExitNav').addEventListener('click',()=>{
     qs('#startInput').value=''; qs('#endInput').value='';
   });
@@ -90,27 +174,22 @@ function initMaps(){
 async function refreshTicker(){
   const inner = qs('#ticker-inner');
   inner.innerHTML = 'Učitavam…';
-
   try{
     const city = encodeURIComponent(STATE.city);
     const [w,t,a,s] = await Promise.all([
       fetch(`${STATE.base}/api/weather?city=${city}`).then(r=>r.json()).catch(()=>null),
       fetch(`${STATE.base}/api/traffic?city=${city}`).then(r=>r.json()).catch(()=>null),
       fetch(`${STATE.base}/api/alerts?city=${city}`).then(r=>r.json()).catch(()=>null),
-      fetch(`${STATE.base}/api/shops?city=${city}`).then(r=>r.json()).catch(()=>null),
+      fetch(`${STATE.base}/api/stores?city=${city}`).then(r=>r.json()).catch(()=>null),
     ]);
 
     const chunks = [];
     if (w?.summary) chunks.push(`☁️ Vrijeme: ${w.summary}`);
     if (t?.status)  chunks.push(`🚗 Promet: ${t.status}`);
-    if (a?.items?.length){
-      chunks.push(...a.items.map(x=>`⚠️ ${x.title}`));
-    }
-    if (s?.openNow?.length){
-      chunks.push(...s.openNow.map(x=>`🛒 ${x.name} otvoreno (zatvara ${x.closes})`));
-    }
+    if (a?.length){ chunks.push(...a.map(x=>`⚠️ ${x.msg}`)); }
+    if (s?.length){ chunks.push(...s.map(x=>`🛒 ${x.name} ${x.status}${x.closes?` (zatvara ${x.closes})`:''}`)); }
 
-    inner.innerHTML = (chunks.length?chunks:['Nema posebnih upozorenja']).map((c,i)=>{
+    inner.innerHTML = (chunks.length?chunks:['Nema posebnih upozorenja']).map(c=>{
       const cls = /⚠️/.test(c) ? 'ticker__warn' : /ALERT|crash|požar/i.test(c) ? 'ticker__danger':'';
       return `<div class="ticker__item ${cls}">${c}</div>`;
     }).join(' • ');
@@ -121,8 +200,9 @@ async function refreshTicker(){
     setLiveDot(false);
   }
 }
+function setLiveDot(ok){ qs('#statusDot').style.background = ok ? '#43d27f' : '#f43f5e'; }
 
-/* ---------- PANELS (data) ---------- */
+/* ---------- PANELS ---------- */
 async function loadWeather(){
   const box = qs('#weatherList');
   box.innerHTML = `<li class="muted">Učitavam...</li>`;
@@ -130,12 +210,13 @@ async function loadWeather(){
     const j = await fetch(`${STATE.base}/api/weather?city=${encodeURIComponent(STATE.city)}`).then(r=>r.json());
     const lines = [];
     if (j?.temp) lines.push(`Temp: ${j.temp} °C`);
+    if (j?.desc) lines.push(`Opis: ${j.desc}`);
     if (j?.wind) lines.push(`Vjetar: ${j.wind}`);
     if (j?.humidity) lines.push(`Vlažnost: ${j.humidity}`);
     if (j?.seaTemp) lines.push(`Temp mora: ${j.seaTemp} °C`);
     box.innerHTML = lines.map(x=>`<li>${x}</li>`).join('') || `<li class="muted">Nema podataka</li>`;
   }catch(e){
-    box.innerHTML = `<li class="muted">Nema podataka (demo)</li>`;
+    box.innerHTML = `<li class="muted">Nema podataka</li>`;
   }
 }
 
@@ -144,7 +225,7 @@ async function loadSea(){
   try{
     const j = await fetch(`${STATE.base}/api/sea?city=${encodeURIComponent(STATE.city)}`).then(r=>r.json());
     ul.innerHTML = `
-      <li>Temp mora: ${j?.temp ?? '—'} °C</li>
+      <li>Temp mora: ${j?.sea_temp ?? j?.temp ?? '—'} °C</li>
       <li>Valovi: ${j?.waves ?? '—'}</li>
       <li>Vjetar: ${j?.wind ?? '—'}</li>`;
   }catch(e){
@@ -159,7 +240,8 @@ function attachServices(){
       const box = qs('#servicesList'); box.innerHTML = 'Tražim...';
       try{
         const j = await fetch(`${STATE.base}/api/services?city=${encodeURIComponent(STATE.city)}&type=${type}`).then(r=>r.json());
-        box.innerHTML = (j?.items||[]).slice(0,8).map(x=>(
+        const items = j?.items || j || [];
+        box.innerHTML = items.slice(0,8).map(x=>(
           `<div class="svc-item"><strong>${x.name||'Nepoznato'}</strong><br><span class="muted">${x.address||''}</span></div>`
         )).join('') || '<div class="muted">Nema rezultata.</div>';
       }catch(e){
@@ -199,20 +281,21 @@ function enableFullscreenCards(){
     btn.addEventListener('click',(e)=>{
       const card = e.target.closest('.card');
       const clone = card.cloneNode(true);
-      const holder = qs('#modalContent'); holder.innerHTML=''; holder.appendChild(clone);
+      qs('#modalContent').innerHTML='';
+      qs('#modalContent').appendChild(clone);
       qs('#modal').classList.remove('hidden');
-      // re-wire map in modal if needed (simple: just show a static copy)
     });
   });
   qs('#modalClose').onclick = ()=> qs('#modal').classList.add('hidden');
 }
 
-/* ---------- MIC (placeholder browser speech) ---------- */
+/* ---------- MIC (browser STT) ---------- */
 function micSetup(){
   const btn = qs('#btnMic');
   let rec=null, on=false;
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
     btn.title = 'Browser bez STT podrške';
+    btn.disabled = true;
     return;
   }
   const R = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -232,7 +315,7 @@ function micSetup(){
   };
 }
 
-/* ---------- SEARCH (city bind) ---------- */
+/* ---------- SEARCH ---------- */
 function wireSearch(){
   qs('#btnSearch').onclick = ()=>{
     const c = qs('#cityInput').value.trim();
@@ -247,14 +330,13 @@ function refreshAll(){
   refreshTicker();
   loadWeather();
   loadSea();
-  // center main map to city
+
   if (window.google?.maps && STATE.maps.map){
     const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({address:STATE.city},(res,st)=>{
+    geocoder.geocode({address:STATE.city},(res)=>{
       const g = res && res[0]; if(!g) return;
       STATE.maps.map.setCenter(g.geometry.location);
       STATE.maps.map.setZoom(12);
-      // update street view near center
       STATE.maps.street.setPosition(g.geometry.location);
     });
   }
@@ -263,23 +345,14 @@ function refreshAll(){
 /* ---------- INIT ---------- */
 (async function init(){
   await loadConfig();
+  runIntro();
 
-  // Intro
-  const intro = qs('#intro'); const app = qs('#app');
-  const showApp = ()=>{ intro.classList.add('hidden'); app.classList.remove('hidden'); };
-  qs('#intro-skip').onclick = showApp;
-  setTimeout(showApp, 1200);
-
-  // UI wires
   wireSearch();
   micSetup();
   bookingLinks();
   enableFullscreenCards();
   attachServices();
 
-  // Maps
-  loadGoogle(()=>{ initMaps(); refreshAll(); });
-
-  // periodic ticker refresh
+  injectGoogle(()=>{ initMaps(); refreshAll(); });
   setInterval(refreshTicker, 60*1000);
 })();
