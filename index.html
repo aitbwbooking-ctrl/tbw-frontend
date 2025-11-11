@@ -9,53 +9,53 @@
   <link rel="icon" href="assets/icons/icon-192.png" />
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-  <!-- Intro / splash -->
+
+  <!-- CINEMATIC INTRO (5s): svemir + komet + supernova + logo -->
   <div id="intro" class="intro">
-    <img src="assets/logo-tbw.png" alt="TBW" class="intro__logo" />
-    <div class="intro__txt">Initializing Smart Concierge &amp; Navigation</div>
-    <button id="intro-skip" class="btn btn--ghost">Skip ▶</button>
+    <canvas id="spaceCanvas"></canvas>
+    <div id="logoReveal">TBW AI PREMIUM</div>
+    <audio id="introAudio" src="assets/sounds/intro.mp3" preload="auto"></audio>
   </div>
 
-  <!-- Global app wrapper -->
+  <!-- APLIKACIJA -->
   <div id="app" class="app hidden">
-    <!-- Top bar -->
+
+    <!-- GORNJI FIKSNI DIO -->
     <header class="topbar">
       <div class="brand">
         <span class="badge live">LIVE</span>
+        <img class="brand__logo" src="assets/logo-tbw.png" alt="TBW"/>
         <span class="brand__title">TBW AI PREMIUM</span>
       </div>
 
-      <!-- Central search (sticky) -->
       <div class="search">
         <input id="cityInput" class="input" placeholder="Upišite grad (npr. Split, Karlovac)..." />
         <button id="btnSearch" class="btn">Traži</button>
-        <button id="btnMic" class="btn btn--icon" title="Glasovno">
-          🎤
-        </button>
+        <button id="btnMic" class="btn btn--icon" title="Glasovna pretraga">🎤</button>
       </div>
 
-      <div class="status-dot" id="statusDot"></div>
+      <div id="statusDot" class="status-dot" title="Backend status"></div>
     </header>
 
-    <!-- Ticker -->
+    <!-- POKRETNA TRAKA (sync: promet, nesreće, radari, trgovine, vrijeme) -->
     <div id="ticker" class="ticker">
       <div id="ticker-inner" class="ticker__inner"></div>
     </div>
 
-    <!-- Grid -->
+    <!-- GRID KARTICA (sve fiksno; na klik ide fullscreen) -->
     <main class="grid">
-      <!-- Navigacija -->
+
+      <!-- NAVIGACIJA -->
       <section class="card" data-card="nav">
         <div class="card__head">
           <h3>Navigacija</h3>
           <div class="card__actions">
-            <button class="btn btn--ghost" id="btnTraffic">Promet</button>
-            <button class="btn btn--ghost" id="btnExitNav">EXIT</button>
+            <button id="btnTraffic" class="btn btn--ghost">Promet</button>
+            <button id="btnExitNav" class="btn btn--ghost">EXIT</button>
             <button class="btn btn--ghost card__max">Max</button>
           </div>
         </div>
@@ -66,7 +66,6 @@
             <input id="endInput" class="input" placeholder="Odredište" />
             <button id="btnGo" class="btn btn--accent">GO</button>
           </div>
-
           <div class="quickchips">
             <span class="chip" data-l="parking">Parking</span>
             <span class="chip" data-l="punionice">Punionice</span>
@@ -77,7 +76,7 @@
         </div>
       </section>
 
-      <!-- Rezervacije -->
+      <!-- REZERVACIJE -->
       <section class="card" data-card="booking">
         <div class="card__head">
           <h3>Rezervacija smještaja</h3>
@@ -106,7 +105,7 @@
         </div>
       </section>
 
-      <!-- Street View -->
+      <!-- STREET VIEW -->
       <section class="card" data-card="street">
         <div class="card__head">
           <h3>Street View</h3>
@@ -117,7 +116,7 @@
         </div>
       </section>
 
-      <!-- Vrijeme • more • zrak -->
+      <!-- VRIJEME • MORE • ZRAK -->
       <section class="card" data-card="weather">
         <div class="card__head">
           <h3>Vrijeme • more • zrak</h3>
@@ -125,12 +124,12 @@
         </div>
         <div class="card__body" id="weatherBox">
           <ul class="bullets" id="weatherList">
-            <li class="muted">Nema podataka, prikazujem demo.</li>
+            <li class="muted">Učitavam...</li>
           </ul>
         </div>
       </section>
 
-      <!-- Promet uživo -->
+      <!-- PROMET UŽIVO -->
       <section class="card" data-card="traffic">
         <div class="card__head">
           <h3>Promet uživo</h3>
@@ -141,10 +140,10 @@
         </div>
       </section>
 
-      <!-- Stanje mora + Servisi & hitne -->
+      <!-- SERVISI & HITNE (uklj. stanje mora iz backend-a) -->
       <section class="card" data-card="sea">
         <div class="card__head">
-          <h3>Stanje mora • Servisi &amp; Hitne</h3>
+          <h3>Servisi &amp; Hitne • (More)</h3>
           <button class="btn btn--ghost card__max">Max</button>
         </div>
         <div class="card__body">
@@ -164,9 +163,10 @@
           <div id="servicesList" class="svc-list"></div>
         </div>
       </section>
+
     </main>
 
-    <!-- Modal fullscreen -->
+    <!-- MODAL FULLSCREEN -->
     <div id="modal" class="modal hidden">
       <div class="modal__inner">
         <button id="modalClose" class="btn btn--ghost modal__close">✕</button>
@@ -175,9 +175,9 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js" defer></script>
   <script>
-    // PWA
+    // PWA regist.
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(()=>{});
     }
