@@ -1,169 +1,33 @@
-<!doctype html>
-<html lang="hr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>TBW AI PREMIUM</title>
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="./style.css" />
-  <meta name="theme-color" content="#0b141a" />
-</head>
-<body>
-  <!-- Ticker (sporo, čitko) -->
-  <div id="ticker" class="ticker" aria-live="polite">
-    <div class="ticker-track" id="tickerTrack">Učitavam obavijesti…</div>
-  </div>
+<!-- TBW APEX INTRO -->
+<div id="tbw-intro" aria-hidden="true">
+  <canvas id="tbw-intro-particles"></canvas>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="brand">
-      <span class="logo">TBW</span>
-      <span class="badge live">LIVE</span>
+  <div class="tbw-intro-hud">
+    <div class="tbw-logo-wrap">
+      <div class="tbw-logo-ring"></div>
+      <img class="tbw-logo" src="assets/icons/TBW.png" alt="TBW" />
     </div>
 
-    <div class="searchbar">
-      <button id="aiBtn" class="chip chip-live" title="AI Concierge">TBW AI PREMIUM</button>
-      <button id="micBtn" class="chip mic" aria-pressed="false" title="Glasovno pretraživanje">🎤</button>
-      <input id="globalSearch" class="search-input" placeholder="Split apartmani" />
-      <button id="searchBtn" class="btn">Traži</button>
-      <span class="status-dot" id="connDot" title="Backend veza"></span>
+    <h1 class="tbw-intro-title">TBW AI PREMIUM</h1>
+    <p class="tbw-intro-sub">Initializing Smart Concierge & Navigation</p>
+
+    <div class="tbw-intro-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span class="tbw-meter-fill"></span>
     </div>
-  </header>
 
-  <!-- GRID: 3x2 kao na slici -->
-  <main class="grid">
-    <!-- Navigacija -->
-    <section class="card" data-module="navigacija">
-      <div class="card-head">
-        <h3>Navigacija</h3>
-        <div class="actions">
-          <button class="chip danger" data-exit>EXIT</button>
-          <button class="chip" id="trafficToggle">Promet</button>
-          <button class="chip" data-expand>Max</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="map" class="map"></div>
-        <div class="row">
-          <input id="navFrom" placeholder="Polazište (opcionalno)" />
-          <input id="navTo" placeholder="Odredište" />
-          <button id="routeBtn" class="btn accent">GO</button>
-        </div>
-      </div>
-    </section>
+    <div class="tbw-intro-hints">
+      <span>AI • Navigacija • Vrijeme • Promet • Rezervacije</span>
+    </div>
 
-    <!-- Rezervacija smještaja -->
-    <section class="card" data-module="smjestaj">
-      <div class="card-head">
-        <h3>Rezervacija smještaja</h3>
-        <div class="actions">
-          <button class="chip" data-expand>Max</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <input id="stayLocation" placeholder="Split / Zadar…" />
-        </div>
-        <div class="row">
-          <input id="dateArrive" type="date" />
-          <input id="dateLeave" type="date" />
-        </div>
-        <div class="row">
-          <select id="guests">
-            <option value="1">1 gost</option>
-            <option value="2" selected>2 gosta</option>
-            <option value="3">3 gosta</option>
-            <option value="4">4 gosta</option>
-            <option value="5">5+ gostiju</option>
-          </select>
-          <div class="row small-gap">
-            <label class="pill"><input type="checkbox" id="optParking" /> Parking</label>
-            <label class="pill"><input type="checkbox" id="optBreakfast" /> Doručak</label>
-            <label class="pill"><input type="checkbox" id="optFamily" /> Obitelj</label>
-          </div>
-        </div>
-        <div class="row">
-          <button id="staySearch" class="btn">Pretraži</button>
-          <button id="stayBook" class="btn accent">Rezerviraj</button>
-          <button id="stayCancel" class="btn danger">Otkaži</button>
-        </div>
-        <p id="stayHint" class="hint">Otvorit će Booking, Expedia, Airbnb… s već popunjenim filterima.</p>
-      </div>
-    </section>
-
-    <!-- Street View -->
-    <section class="card" data-module="street">
-      <div class="card-head">
-        <h3>Street View</h3>
-        <div class="actions">
-          <button class="chip" data-expand>Max</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="pano" class="pano">Odaberi lokaciju na karti</div>
-      </div>
-    </section>
-
-    <!-- Vrijeme (zrak + more) -->
-    <section class="card" data-module="vrijeme">
-      <div class="card-head">
-        <h3>Vrijeme • more • zrak</h3>
-        <div class="actions">
-          <button class="chip" data-expand>Max</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <ul id="weatherList" class="bullets">
-          <!-- dinamički -->
-        </ul>
-      </div>
-    </section>
-
-    <!-- Promet uživo -->
-    <section class="card" data-module="promet">
-      <div class="card-head">
-        <h3>Promet uživo</h3>
-        <div class="actions">
-          <button class="chip" data-expand>Max</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="trafficMini" class="mini-map"></div>
-      </div>
-    </section>
-
-    <!-- Stanje mora -->
-    <section class="card" data-module="more">
-      <div class="card-head">
-        <h3>Stanje mora</h3>
-        <div class="actions">
-          <button class="chip" data-expand>Max</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="seaWrap" class="sea">
-          <div class="sea-big">
-            <div><span class="label">Temp mora</span> <span id="seaTemp">–</span></div>
-            <div><span class="label">Valovi</span> <span id="seaWaves">–</span></div>
-            <div><span class="label">Vjetar</span> <span id="seaWind">–</span></div>
-          </div>
-          <div class="sea-photos" id="seaPhotos"></div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Fullscreen modal -->
-  <div id="modal" class="modal" aria-hidden="true">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3 id="modalTitle">Detalji</h3>
-        <button id="modalClose" class="chip">Zatvori</button>
-      </div>
-      <div id="modalBody" class="modal-body"></div>
+    <div class="tbw-intro-ctl">
+      <button id="tbw-intro-skip" class="tbw-ghost">Skip ⏭</button>
+      <button id="tbw-intro-mute" class="tbw-ghost" aria-pressed="false">🔊</button>
     </div>
   </div>
 
-  <script src="./app.js" type="module"></script>
-</body>
-</html>
+  <!-- zvuk: koristi tvoj već postojeći intro u assets/sounds/intro.mp3 -->
+  <audio id="tbw-intro-audio" preload="auto">
+    <source src="assets/sounds/intro.mp3" type="audio/mpeg" />
+  </audio>
+</div>
+<!-- /TBW APEX INTRO -->
