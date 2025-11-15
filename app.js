@@ -1,711 +1,353 @@
-/const API_BASE = "https://tbw-backend.vercel.app/api/tbw";
-
-// ---------- API helper ----------
-async function callApi(route, extraParams = {}) {
-    try {
-        const url = new URL(API_BASE);
-        url.searchParams.set("route", route);
-
-        Object.entries(extraParams).forEach(([k, v]) => {
-            url.searchParams.set(k, v);
-        });
-
-        const res = await fetch(url.toString());
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return await res.json();
-    } catch (err) {
-        console.error("API error:", route, err);
-        return { ok: false, error: err.message };
-    }
-}
-/ ============================================
-// TBW FRONTEND – APP LOGIC
-// ============================================
+/* --------------------------------------------
+   TBW AI PREMIUM – FRONTEND MAIN SCRIPT
+   Radi sa backendom: https://tbw-backend.vercel.app/api/tbw
+-------------------------------------------- */
 
 const API_BASE = "https://tbw-backend.vercel.app/api/tbw";
 
-// ---------- API helper ----------
-async function callApi(route, extraParams = {}) {
-    try {
-        const url = new URL(API_BASE);
-        url.searchParams.set("route", route);
-        Object.entries(extraParams).forEach(([k, v]) =>
-            url.searchParams.set(k, v)
-        );
+/* ---------- API helper ---------- */
+async function callApi(route, params = {}) {
+  try {
+    const url = new URL(API_BASE);
+    url.searchParams.set("route", route);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
-        const res = await fetch(url.toString());
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return await res.json();
-    } catch (err) {
-        console.error("API error:", route, err);
-        return { ok: false, error: err.message };
-    }
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (err) {
+    console.error("API error:", route, err);
+    return { ok: false, error: err.message };
+  }
 }
 
-// ============================================
-// INTRO (kratki fade + zvuk kometa)
-// ============================================
-const introOverlay = document.getElementById("introOverlay");
-const introCanvas = document.getElementById("introCanvas");
-const introAudio = document.getElementById("introAudio");
-const skipIntroBtn = document.getElementById("skipIntro");
+/* ---------- JEZICI ---------- */
 
-function runIntro() {
-    if (!introOverlay || !introCanvas) return;
+let currentLang = "HR";
 
-    const ctx = introCanvas.getContext("2d");
-    let w = (introCanvas.width = introCanvas.clientWidth || 600);
-    let h = (introCanvas.height = introCanvas.clientHeight || 300);
+const LANG = {
+  HR: {
+    searchPlaceholder: "Pretraži (Split, apartmani...)",
+    searchBtn: "Traži",
+    nav: "Navigacija",
+    booking: "Rezervacija smještaja",
+    street: "Street View",
+    weather: "Vrijeme",
+    sea: "Stanje mora",
+    traffic: "Promet uživo",
+    services: "Servisi",
+    transit: "Javni prijevoz",
+    airport: "Aerodromi & RDS alarmi"
+  },
+  EN: {
+    searchPlaceholder: "Search (Split, apartments...)",
+    searchBtn: "Search",
+    nav: "Navigation",
+    booking: "Booking",
+    street: "Street View",
+    weather: "Weather",
+    sea: "Sea conditions",
+    traffic: "Live traffic",
+    services: "Services",
+    transit: "Public transport",
+    airport: "Airports & RDS alerts"
+  }
+};
 
-    const stars = Array.from({ length: 100 }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: Math.random() * 1.5 + 0.5,
-        s: Math.random() * 0.5 + 0.2
-    }));
+function applyLanguage() {
+  const L = LANG[currentLang];
 
-    let comet = { x: -40, y: h * 0.4, vx: 4, vy: 0.6 };
+  document.getElementById("globalSearch").placeholder = L.searchPlaceholder;
+  document.getElementById("searchBtn").textContent = L.searchBtn;
 
-    let startTime = null;
+  document.querySelector("#cardNav h3").textContent = L.nav;
+  document.querySelector("#cardBooking h3").textContent = L.booking;
+  document.querySelector("#cardStreet h3").textContent = L.street;
+  document.querySelector("#weatherBox h3").textContent = L.weather;
+  document.querySelector("#seaBox h3").textContent = L.sea;
+  document.querySelector("#trafficCard h3").textContent = L.traffic;
+  document.querySelector("#servicesBox h3").textContent = L.services;
+  document.querySelector("#transitBox h3").textContent = L.transit;
+  document.querySelector("#airportBox h3").textContent = L.airport;
 
-    function frame(t) {
-        if (!startTime) startTime = t;
-        const dt = t - startTime;
+  document.getElementById("langHR").classList.toggle("active", currentLang === "HR");
+  document.getElementById("langEN").classList.toggle("active", currentLang === "EN");
+}
 
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, w, h);
+/* ---------- INTRO (simple starfield) ---------- */
 
-        // stars
-        ctx.fillStyle = "#fff";
-        for (const s of stars) {
-            s.x -= s.s;
-            if (s.x < 0) s.x = w;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fill();
-        }
+(function setupIntro() {
+  const overlay = document.getElementById("introOverlay");
+  const canvas = document.getElementById("introCanvas");
+  const audio = document.getElementById("introAudio");
+  const skipBtn = document.getElementById("skipIntro");
 
-        // comet
-        comet.x += comet.vx;
-        comet.y += comet.vy;
+  if (!overlay || !canvas) return;
 
-        const grad = ctx.createRadialGradient(
-            comet.x,
-            comet.y,
-            0,
-            comet.x,
-            comet.y,
-            40
-        );
-        grad.addColorStop(0, "#ffe082");
-        grad.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(comet.x, comet.y, 12, 0, Math.PI * 2);
-        ctx.fill();
+  const ctx = canvas.getContext("2d");
+  let w, h;
 
-        if (dt < 4500) {
-            requestAnimationFrame(frame);
-        } else {
-            introOverlay.style.opacity = "0";
-            setTimeout(() => {
-                introOverlay.style.display = "none";
-            }, 600);
-        }
-    }
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener("resize", resize);
 
-    if (introAudio) {
-        introAudio.currentTime = 0;
-        introAudio.play().catch(() => {});
+  const stars = Array.from({ length: 120 }, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    z: Math.random() * 1.2 + 0.2
+  }));
+
+  function frame() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, w, h);
+
+    for (const s of stars) {
+      s.x -= s.z * 0.6;
+      if (s.x < 0) s.x = w;
+      ctx.fillStyle = "white";
+      ctx.fillRect(s.x, s.y, 1.5 * s.z, 1.5 * s.z);
     }
 
     requestAnimationFrame(frame);
+  }
 
-    if (skipIntroBtn) {
-        skipIntroBtn.onclick = () => {
-            introOverlay.style.opacity = "0";
-            setTimeout(() => (introOverlay.style.display = "none"), 400);
-            if (introAudio) introAudio.pause();
-        };
-    }
-}
+  requestAnimationFrame(frame);
 
-if (introOverlay) {
-    // samo prvi put
-    if (!localStorage.getItem("tbw_intro_seen")) {
-        localStorage.setItem("tbw_intro_seen", "1");
-        runIntro();
-    } else {
-        introOverlay.style.display = "none";
-    }
-}
+  function closeIntro() {
+    overlay.style.opacity = "0";
+    setTimeout(() => (overlay.style.display = "none"), 500);
+  }
 
-// ============================================
-// HR / EN – tekstovi
-// ============================================
+  if (audio) {
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  }
 
-let currentLang = "hr";
+  setTimeout(closeIntro, 3500);
+  if (skipBtn) skipBtn.onclick = closeIntro;
+})();
 
-const labels = {
-    hr: {
-        nav: "Navigacija",
-        booking: "Rezervacija smještaja",
-        street: "Street View",
-        weather: "Vrijeme",
-        traffic: "Promet uživo",
-        sea: "Stanje mora",
-        services: "Servisi",
-        transit: "Javni prijevoz",
-        airport: "Aerodromi & RDS alarmi",
-        searchPlaceholder: "Pretraži (Split, apartmani…)",
-        searchBtn: "Traži",
-        tickerFallback: "Nema aktivnih upozorenja. Sretan put!"
-    },
-    en: {
-        nav: "Navigation",
-        booking: "Accommodation booking",
-        street: "Street View",
-        weather: "Weather",
-        traffic: "Live traffic",
-        sea: "Sea & ferries",
-        services: "Services",
-        transit: "Public transport",
-        airport: "Airports & RDS alerts",
-        searchPlaceholder: "Search (Split, apartments…)",
-        searchBtn: "Search",
-        tickerFallback: "No active alerts. Safe travels!"
-    }
-};
+/* ---------- TICKER ---------- */
 
-function applyLanguage(lang) {
-    currentLang = lang;
-    const txt = labels[lang];
-
-    document.querySelector("#navCard h3").textContent = txt.nav;
-    document.querySelector("#bookingCard h3").textContent = txt.booking;
-    document.querySelector("#streetCard h3").textContent = txt.street;
-    document.querySelector("#weatherCard h3").textContent = txt.weather;
-    document.querySelector("#trafficCard h3").textContent = txt.traffic;
-    document.querySelector("#seaCard h3").textContent = txt.sea;
-    document.querySelector("#servicesCard h3").textContent = txt.services;
-    document.querySelector("#transitCard h3").textContent = txt.transit;
-    document.querySelector("#airportCard h3").textContent = txt.airport;
-
-    const gs = document.getElementById("globalSearch");
-    if (gs) gs.placeholder = txt.searchPlaceholder;
-
-    const sb = document.getElementById("searchBtn");
-    if (sb) sb.textContent = txt.searchBtn;
-
-    document
-        .querySelectorAll(".langSwitch")
-        .forEach(btn => btn.classList.remove("active"));
-    const activeBtn =
-        lang === "hr" ? document.getElementById("langHR") : document.getElementById("langEN");
-    if (activeBtn) activeBtn.classList.add("active");
-}
-
-// ============================================
-// TICKER – ALERTS
-// ============================================
-
-const tickerContent = document.getElementById("tickerContent");
-
-async function loadAlerts(city) {
+async function loadTicker(city) {
+  const el = document.getElementById("tickerContent");
+  try {
     const data = await callApi("alerts", { city: city || "Split" });
-    if (!tickerContent) return;
-
-    if (data && data.alerts && data.alerts.length) {
-        tickerContent.textContent = data.alerts
-            .map(a => a.message || a)
-            .join(" • ");
-    } else {
-        tickerContent.textContent = labels[currentLang].tickerFallback;
+    if (!data.ok || !data.alerts || !data.alerts.length) {
+      el.textContent = "Nema aktivnih upozorenja. Vozite sigurno.";
+      return;
     }
+    el.textContent = data.alerts.map(a => a.message).join(" • ");
+  } catch {
+    el.textContent = "Upozorenja trenutno nedostupna.";
+  }
 }
 
-// ============================================
-// HELPER – grad iz searcha
-// ============================================
+/* ---------- HELPERS ---------- */
 
-function getCityFromInput() {
-    const inp = document.getElementById("globalSearch");
-    if (!inp || !inp.value.trim()) return "Split";
-    return inp.value.trim();
+function getCity() {
+  const v = document.getElementById("globalSearch").value.trim();
+  return v || "Split";
 }
 
-// ============================================
-// WEATHER
-// ============================================
-
-const weatherBox = document.getElementById("weatherBox");
+/* ---------- LOADERS ZA KARTICE ---------- */
 
 async function loadWeather() {
-    const city = getCityFromInput();
-    const data = await callApi("weather", { city });
+  const box = document.querySelector("#weatherBox .weatherContent");
+  box.textContent = "Učitavanje...";
+  const data = await callApi("weather", { city: getCity() });
+  if (!data.ok) return (box.textContent = "Greška pri učitavanju.");
 
-    if (!weatherBox) return;
-
-    if (data && data.ok) {
-        weatherBox.innerHTML = "";
-
-        const temp = document.createElement("div");
-        temp.textContent = `${data.temperature}°C`;
-
-        const cond = document.createElement("div");
-        cond.textContent = data.condition || "";
-
-        // animacije
-        const lower = (data.condition || "").toLowerCase();
-        if (lower.includes("sun") || lower.includes("vedro")) {
-            temp.classList.add("weather-sun");
-        } else if (
-            lower.includes("rain") ||
-            lower.includes("kiša") ||
-            lower.includes("drizzle")
-        ) {
-            temp.classList.add("weather-rain");
-        } else if (lower.includes("snow") || lower.includes("snijeg")) {
-            temp.classList.add("weather-snow");
-        }
-
-        const cityRow = document.createElement("div");
-        cityRow.textContent = data.city || city;
-
-        weatherBox.appendChild(cityRow);
-        weatherBox.appendChild(temp);
-        weatherBox.appendChild(cond);
-    } else {
-        weatherBox.textContent = "Greška pri dohvaćanju vremena.";
-    }
+  box.innerHTML = `
+    <div style="font-size:30px">${data.temperature}°C</div>
+    <div>${data.condition || ""}</div>
+  `;
 }
-
-// ============================================
-// TRAFFIC
-// ============================================
-
-const trafficBox = document.getElementById("trafficBox");
-
-async function loadTraffic() {
-    const city = getCityFromInput();
-    const data = await callApi("traffic", { city });
-
-    if (!trafficBox) return;
-
-    if (data && data.ok) {
-        trafficBox.innerHTML = "";
-        trafficBox.textContent = data.description || data.status || "Promet učitan.";
-    } else {
-        trafficBox.textContent = "Promet nedostupan.";
-    }
-}
-
-// ============================================
-// SEA
-// ============================================
-
-const seaBox = document.getElementById("seaBox");
 
 async function loadSea() {
-    const city = getCityFromInput();
-    const data = await callApi("sea", { city });
+  const box = document.getElementById("seaContent");
+  box.textContent = "Učitavanje...";
+  const data = await callApi("sea", { city: getCity() });
+  if (!data.ok) return (box.textContent = "Greška pri učitavanju.");
 
-    if (!seaBox) return;
-
-    if (data && data.ok) {
-        seaBox.innerHTML = "";
-        const temp = document.createElement("div");
-        temp.textContent = `More: ${data.temperature || "–"}°C`;
-        const uv = document.createElement("div");
-        uv.textContent = `UV: ${data.uv || "n/a"}`;
-        const note = document.createElement("div");
-        note.textContent = data.note || "";
-        seaBox.appendChild(temp);
-        seaBox.appendChild(uv);
-        seaBox.appendChild(note);
-    } else {
-        seaBox.textContent = "More oko generalski stol. UV umjeren.";
-    }
+  box.innerHTML = `
+    Temperatura: ${data.temperature}°C<br>
+    ${data.note || ""}
+  `;
 }
 
-// ============================================
-// SERVICES
-// ============================================
+async function loadTraffic() {
+  const box = document.getElementById("trafficContent");
+  box.textContent = "Učitavanje...";
+  const data = await callApi("traffic", { city: getCity() });
+  if (!data.ok) return (box.textContent = "Greška pri učitavanju.");
 
-const servicesBox = document.getElementById("servicesBox");
+  box.innerHTML = `
+    Status: ${data.status || "normal"}<br>
+    Brzina: ${data.speed || 0} km/h<br>
+    Kašnjenje: ${data.delay || 0} min
+  `;
+}
 
 async function loadServices() {
-    const city = getCityFromInput();
-    const data = await callApi("services", { city });
-    if (!servicesBox) return;
-
-    if (data && data.ok && data.services) {
-        servicesBox.innerHTML = "";
-        data.services.forEach(s => {
-            const div = document.createElement("div");
-            div.textContent = `${s.name} – ${s.status}`;
-            servicesBox.appendChild(div);
-        });
-    } else {
-        servicesBox.textContent =
-            "Konzum – otvoreno (zatvara 22:00)\nTommy – otvoreno (zatvara 21:00)";
-    }
+  const box = document.getElementById("servicesContent");
+  const data = await callApi("services", { city: getCity() });
+  if (!data.ok || !data.services) {
+    box.textContent = "Nema podataka.";
+    return;
+  }
+  box.innerHTML = data.services
+    .map(s => `${s.name} – ${s.status}`)
+    .join("<br>");
 }
-
-// ============================================
-// TRANSIT
-// ============================================
-
-const transitBox = document.getElementById("transitBox");
 
 async function loadTransit() {
-    const city = getCityFromInput();
-    const data = await callApi("transit", { city });
-    if (!transitBox) return;
-
-    if (data && data.ok) {
-        transitBox.innerHTML = "";
-        (data.lines || []).forEach(l => {
-            const div = document.createElement("div");
-            div.textContent = `${l.type} ${l.name} – ${l.next}`;
-            transitBox.appendChild(div);
-        });
-        if (!data.lines || !data.lines.length) {
-            transitBox.textContent = "Nema posebnih informacija o prijevozu.";
-        }
-    } else {
-        transitBox.textContent = "Autobus 37: Split → Trogir u 12:22";
-    }
+  const box = document.getElementById("transitContent");
+  const data = await callApi("transit", { city: getCity() });
+  if (!data.ok || !data.lines) {
+    box.textContent = "Nema podataka.";
+    return;
+  }
+  box.innerHTML = data.lines
+    .map(l => `${l.name}: ${l.departure}`)
+    .join("<br>");
 }
-
-// ============================================
-// AIRPORT & RDS
-// ============================================
-
-const airportBox = document.getElementById("airportBox");
 
 async function loadAirport() {
-    const city = getCityFromInput();
-    const data = await callApi("airport", { city });
-    if (!airportBox) return;
-
-    if (data && data.ok) {
-        airportBox.innerHTML = "";
-        if (data.flight) {
-            const f = data.flight;
-            airportBox.innerHTML =
-                `${f.code || f.number || ""} ${f.from} → ${f.to}, ETA ${f.eta || f.arrival} (${f.status || "on time"})<br>` +
-                (data.rds
-                    ? `RDS: ${data.rds}`
-                    : "RDS: nema posebnih upozorenja.");
-        } else if (data.flights && data.flights.length) {
-            const f = data.flights[0];
-            airportBox.innerHTML =
-                `${f.flight || f.code || ""} ${f.from} → ${f.to}, ETA ${f.eta || f.arrival} (${f.status || "on time"})`;
-        } else {
-            airportBox.textContent = "Nema informacija o letovima.";
-        }
-    } else {
-        airportBox.textContent =
-            "LH1412 Frankfurt → Zagreb – ETA 15:42 (on time)\nRDS: Požar u blizini Dugopolja — oprez!";
-    }
+  const box = document.getElementById("airportContent");
+  const data = await callApi("airport", { city: getCity() });
+  if (!data.ok) {
+    box.textContent = "Nema podataka.";
+    return;
+  }
+  box.innerHTML = `
+    Let: ${data.flight || ""} – ETA ${data.eta || ""}<br>
+    RDS: ${data.alert || "nema upozorenja"}
+  `;
 }
 
-// ============================================
-// FULLSCREEN CARD LOGIKA
-// ============================================
+/* ---------- NAV CARD (za sada demo tekst) ---------- */
 
-function openFullscreen(title, innerHtml) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "fullscreenCard";
-    wrapper.id = "fullscreenCard";
-
-    const closeBtn = document.createElement("button");
-    closeBtn.className = "fullscreenClose";
-    closeBtn.textContent = "Zatvori";
-    closeBtn.onclick = () => wrapper.remove();
-
-    const h = document.createElement("h2");
-    h.textContent = title;
-    h.style.marginBottom = "12px";
-
-    const content = document.createElement("div");
-    content.innerHTML = innerHtml;
-
-    wrapper.appendChild(closeBtn);
-    wrapper.appendChild(h);
-    wrapper.appendChild(content);
-    document.body.appendChild(wrapper);
+function updateNavCard() {
+  const box = document.getElementById("navContent");
+  box.innerHTML = `Nema aktivne rute<br><small>Dodirni za budući PRO NAVI prikaz.</small>`;
 }
 
-// Street View fullscreen
-function openStreetViewFullscreen() {
-    const city = getCityFromInput();
-    const url =
-        "https://www.google.com/maps?q=" +
-        encodeURIComponent(city) +
-        "&layer=c&cbll=0,0&cbp=12,0,0,0,0&output=embed";
+/* ---------- BOOKING CARD ---------- */
 
-    const html = `
-        <div id="streetFSContainer">
-            <iframe src="${url}" allowfullscreen loading="lazy"></iframe>
-        </div>
-    `;
-    openFullscreen("Street View – " + city, html);
+function updateBookingCard() {
+  const box = document.getElementById("bookingInfo");
+  box.innerHTML = `Dodirni za pretragu Booking.com ponuda za: <b>${getCity()}</b>`;
 }
 
-// Navigacija fullscreen (demo co-pilot)
-function openNavFullscreen() {
-    const html = `
-        <p>Govorne komande primjer:</p>
-        <ul>
-            <li>"Hey TBW, vodi me do Zagreba"</li>
-            <li>"Smanji/pojačaj strelicu za 20%"</li>
-            <li>"Kako je stanje na cesti prema Splitu?"</li>
-        </ul>
-        <p style="margin-top:10px;font-size:14px;opacity:0.8;">
-        TBW co-driver će koristiti iste glasovne postavke kao i glavni pretraživač (HR/EN).
-        </p>
-    `;
-    openFullscreen(
-        currentLang === "hr" ? "TBW Navigacija" : "TBW Navigation",
-        html
-    );
+/* ---------- STREET VIEW CARD ---------- */
+
+function updateStreetCard() {
+  const box = document.getElementById("streetPreview");
+  box.innerHTML = `Dodirni za prikaz panorame destinacije <b>${getCity()}</b>.`;
 }
 
-// ============================================
-// BOOKING REDIRECT
-// ============================================
+/* ---------- FULLSCREEN MODAL ---------- */
 
-const bookingCard = document.getElementById("bookingCard");
+const modal = document.getElementById("modalOverlay");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
+const modalClose = document.getElementById("modalClose");
 
-if (bookingCard) {
-    bookingCard.addEventListener("click", () => {
-        const city = getCityFromInput();
-        const url =
-            "https://www.booking.com/searchresults.html?ss=" +
-            encodeURIComponent(city);
-        window.open(url, "_blank");
-    });
+function openModalFromCard(card) {
+  const title = card.querySelector("h3").textContent;
+  const bodyHtml = card.querySelector(".cardBody").innerHTML;
+  modalTitle.textContent = title;
+  modalBody.innerHTML = bodyHtml;
+  modal.classList.remove("hidden");
 }
 
-// ============================================
-// CARD CLICK HANDLERS
-// ============================================
+modalClose.onclick = () => modal.classList.add("hidden");
+modal.onclick = (e) => {
+  if (e.target === modal) modal.classList.add("hidden");
+};
 
-const streetCard = document.getElementById("streetCard");
-if (streetCard) streetCard.addEventListener("click", openStreetViewFullscreen);
+document.querySelectorAll(".card").forEach(card => {
+  card.addEventListener("click", () => openModalFromCard(card));
+});
 
-const navCard = document.getElementById("navCard");
-if (navCard) navCard.addEventListener("click", openNavFullscreen);
-
-// ============================================
-// NAVIGACIJA STATUS + GUMBI
-// ============================================
-
-const navStatus = document.getElementById("navStatus");
-const startNavBtn = document.getElementById("startNav");
-const stopNavBtn = document.getElementById("stopNav");
-
-if (startNavBtn) {
-    startNavBtn.addEventListener("click", evt => {
-        evt.stopPropagation();
-        const city = getCityFromInput();
-        if (navStatus)
-            navStatus.textContent =
-                "Ruta aktivna – vodi prema: " + city + ".";
-    });
-}
-
-if (stopNavBtn) {
-    stopNavBtn.addEventListener("click", evt => {
-        evt.stopPropagation();
-        if (navStatus) navStatus.textContent = "Nema aktivne rute";
-    });
-}
-
-// ============================================
-// VOICE (SpeechRecognition + TTS)
-// ============================================
+/* ---------- MIC / GOVOR ---------- */
 
 let recognition = null;
 let isListening = false;
 
 if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-    const SR =
-        window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SR();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "hr-HR";
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = "hr-HR";
 
-    recognition.onend = () => {
-        isListening = false;
-    };
+  recognition.onstart = () => { isListening = true; };
+  recognition.onend = () => { isListening = false; };
+  recognition.onerror = () => { isListening = false; };
+
+  recognition.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    document.getElementById("globalSearch").value = text;
+  };
 }
 
-function setRecognitionLang() {
-    if (!recognition) return;
-    recognition.lang = currentLang === "hr" ? "hr-HR" : "en-US";
+document.getElementById("micBtn").onclick = () => {
+  if (!recognition) {
+    alert("Govorno prepoznavanje nije podržano u ovom pregledniku.");
+    return;
+  }
+  if (isListening) return; // spriječi error "already started"
+  try {
+    recognition.start();
+  } catch (e) {
+    console.warn("Speech start error:", e);
+  }
+};
+
+/* ---------- JEZIK GUMBI ---------- */
+
+document.getElementById("langHR").onclick = () => {
+  currentLang = "HR";
+  recognition && (recognition.lang = "hr-HR");
+  applyLanguage();
+};
+
+document.getElementById("langEN").onclick = () => {
+  currentLang = "EN";
+  recognition && (recognition.lang = "en-US");
+  applyLanguage();
+};
+
+/* ---------- MAIN LOAD ---------- */
+
+async function loadAll() {
+  updateNavCard();
+  updateBookingCard();
+  updateStreetCard();
+
+  await Promise.all([
+    loadTicker(getCity()),
+    loadWeather(),
+    loadSea(),
+    loadTraffic(),
+    loadServices(),
+    loadTransit(),
+    loadAirport()
+  ]);
 }
 
-function speak(text) {
-    if (!window.speechSynthesis) return;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = currentLang === "hr" ? "hr-HR" : "en-US";
-    window.speechSynthesis.speak(u);
-}
+/* SEARCH BUTTON → reload podataka za novi grad */
 
-function startMicFor(inputEl, mode = "search") {
-    if (!recognition) {
-        alert("Govorno prepoznavanje nije podržano u ovom pregledniku.");
-        return;
-    }
-    if (isListening) return;
-    isListening = true;
-    setRecognitionLang();
+document.getElementById("searchBtn").onclick = () => {
+  loadAll();
+};
 
-    recognition.onresult = e => {
-        const text = e.results[0][0].transcript;
-        if (mode === "search") {
-            inputEl.value = text;
-            runAll();
-        } else if (mode === "assistant") {
-            handleVoiceCommand(text);
-        }
-    };
+/* INIT */
 
-    try {
-        recognition.start();
-    } catch (e) {
-        isListening = false;
-        console.warn("Recognition already started.");
-    }
-}
-
-// Globalni mic (gore desno): co-driver
-const topMic = document.getElementById("micBtn");
-if (topMic) {
-    topMic.addEventListener("click", () => {
-        startMicFor(document.getElementById("globalSearch"), "assistant");
-    });
-}
-
-// Voice button uz search input: samo search
-const voiceBtn = document.getElementById("voiceBtn");
-if (voiceBtn) {
-    voiceBtn.addEventListener("click", () => {
-        startMicFor(document.getElementById("globalSearch"), "search");
-    });
-}
-
-// Interpretacija glasovnih komandi
-function handleVoiceCommand(spoken) {
-    const text = spoken.toLowerCase();
-    console.log("Voice cmd:", text);
-
-    // "hey tbw" trigger – nije nužno, ali simuliramo
-    const cleaned = text.replace("hej tbw", "").replace("hey tbw", "").trim();
-
-    const city = getCityFromInput();
-
-    // Jednostavni primjeri:
-    if (
-        cleaned.includes("vrijeme") ||
-        cleaned.includes("weather")
-    ) {
-        loadWeather().then(() => {
-            const msg =
-                currentLang === "hr"
-                    ? `Trenutno vrijeme za ${city} učitano na ekranu.`
-                    : `Current weather for ${city} is now on screen.`;
-            speak(msg);
-        });
-        return;
-    }
-
-    if (cleaned.includes("promet") || cleaned.includes("traffic")) {
-        loadTraffic().then(() => {
-            const msg =
-                currentLang === "hr"
-                    ? `Promet prema destinaciji je osvježen.`
-                    : `Traffic has been refreshed.`;
-            speak(msg);
-        });
-        return;
-    }
-
-    if (cleaned.includes("navigacij") || cleaned.includes("navigate")) {
-        if (navStatus)
-            navStatus.textContent =
-                currentLang === "hr"
-                    ? `Ruta aktivna – vodi prema: ${city}.`
-                    : `Route active – heading to ${city}.`;
-        const msg =
-            currentLang === "hr"
-                ? `Pokrećem rutu prema ${city}.`
-                : `Starting route to ${city}.`;
-        speak(msg);
-        return;
-    }
-
-    if (
-        cleaned.includes("povećaj strelicu") ||
-        cleaned.includes("increase arrow")
-    ) {
-        const msg =
-            currentLang === "hr"
-                ? "OK, povećavam pokazivač za 20%."
-                : "OK, increasing the arrow size by 20%.";
-        speak(msg);
-        return;
-    }
-
-    // fallback: samo postavi u search
-    const input = document.getElementById("globalSearch");
-    if (input) input.value = spoken;
-    runAll();
-}
-
-// ============================================
-// LANGUAGE SWITCH BUTTONS
-// ============================================
-
-const langHRBtn = document.getElementById("langHR");
-const langENBtn = document.getElementById("langEN");
-
-if (langHRBtn) langHRBtn.addEventListener("click", () => applyLanguage("hr"));
-if (langENBtn) langENBtn.addEventListener("click", () => applyLanguage("en"));
-
-// ============================================
-// SEARCH GUMB – REFRESH SVE
-// ============================================
-
-const searchBtn = document.getElementById("searchBtn");
-if (searchBtn) {
-    searchBtn.addEventListener("click", () => runAll());
-}
-
-// ============================================
-// GLAVNA FUNKCIJA – Učitaj sve widgete
-// ============================================
-
-function runAll() {
-    const city = getCityFromInput();
-    loadAlerts(city);
-    loadWeather();
-    loadTraffic();
-    loadSea();
-    loadServices();
-    loadTransit();
-    loadAirport();
-}
-
-// ============================================
-// INIT
-// ============================================
-
-document.addEventListener("DOMContentLoaded", () => {
-    applyLanguage("hr");
-    runAll();
-});
+applyLanguage();
+loadAll();
