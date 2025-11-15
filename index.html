@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="hr">
 <head>
   <meta charset="utf-8" />
   <title>TBW AI PREMIUM – Smart Travel, Navigation & Global Booking Assistant</title>
@@ -14,26 +14,30 @@
 </head>
 <body>
 
-  <!-- INTRO -->
+  <!-- INTRO (prikazuje se samo prvi put – kontrola u app.js) -->
   <div id="introOverlay" class="intro">
     <canvas id="introCanvas"></canvas>
     <div class="intro-inner">
       <img src="/assets/TBW.png" alt="TBW Logo" class="intro-logo" />
       <div class="intro-title">TBW AI PREMIUM</div>
       <div class="intro-subtitle">Smart Travel, Navigation &amp; Global Booking Assistant</div>
-      <button id="skipIntro" class="btn ghost">Skip intro</button>
+      <button id="skipIntro" class="btn ghost">Preskoči intro</button>
     </div>
     <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
   </div>
 
   <!-- COOKIE BANNER -->
   <div id="cookieBanner" class="cookie-banner">
-    <div class="cookie-text">This app uses cookies for better experience, security and AI features.</div>
+    <div class="cookie-text">
+      Ova aplikacija koristi kolačiće za bolje iskustvo, sigurnost i AI funkcije.
+    </div>
     <div class="cookie-btns">
-      <button id="cookieAccept" class="btn accept">Accept</button>
-      <button id="cookieReject" class="btn reject">Reject</button>
+      <button id="cookieAccept" class="btn accept">Prihvati</button>
+      <button id="cookieReject" class="btn reject">Odbij</button>
     </div>
   </div>
+
+  <!-- GORNJI FIKSNI DIO: TOPBAR + HEADER + SEARCH + VOICE BAR + STATUS -->
 
   <!-- TOP TICKER BAR -->
   <div id="topBar" class="topbar">
@@ -43,151 +47,269 @@
         <span class="live-text">TBW LIVE</span>
       </div>
       <div class="topbar-ticker">
-        <div id="tickerContent" class="ticker-content">Loading alerts…</div>
+        <div id="tickerContent" class="ticker-content">
+          Učitavam obavijesti…
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- HEADER -->
+  <!-- HEADER / MAIN BRAND + LANGUAGE TOGGLE -->
   <header class="header">
     <div class="brand">
       <img src="/assets/TBW.png" alt="TBW" class="brand-logo" />
       <div class="brand-text">
         <h1>TBW AI PREMIUM</h1>
-        <div class="brand-sub">Smart Travel, Navigation &amp; Global Booking Assistant</div>
+        <div class="brand-sub">
+          Smart Travel, Navigation &amp; Global Booking Assistant
+        </div>
       </div>
     </div>
 
     <div class="main-search">
-      <div class="search-input-wrap">
-        <input id="globalSearch" type="text" placeholder="Where do you want to go? (city, hotel, POI…)" />
-        <button id="micBtn" class="icon-btn">🎤</button>
-      </div>
-      <button id="searchBtn" class="btn primary">Search / Go</button>
+      <!-- jezični toggle (HR / EN – logiku radi app.js) -->
+      <button id="langToggle" class="btn ghost" title="Promijeni jezik">
+        🇭🇷 / 🇬🇧
+      </button>
     </div>
   </header>
 
-  <!-- STATUS -->
-  <div class="status-strip">
-    <span id="backendStatus" class="status-dot offline">Backend: checking…</span>
-    <span id="geoStatus" class="status-dot">Location: unknown</span>
+  <!-- GLOBALNA TRAŽILICA + VOICE BAR -->
+  <div style="padding: 0 14px 6px;">
+    <div class="search-input-wrap">
+      <input 
+        id="globalSearch"
+        type="text"
+        placeholder="Traži…"
+        class="search-centered pulse-placeholder"
+      />
+      <button id="micBtn" class="icon-btn mic-idle" title="Glasovni unos 🎤">
+        🎤
+      </button>
+    </div>
+
+    <!-- Voice Command Bar (pojavljuje se samo kad mikrofon sluša) -->
+    <div id="voiceBar" class="voice-bar hidden">
+      Slušam vas… recite naredbu (npr. "Želim do Splita", "Slobodni apartmani Zadar").
+    </div>
   </div>
 
-  <!-- MAIN GRID -->
+  <!-- STATUS STRIP -->
+  <div class="status-strip">
+    <span id="backendStatus" class="status-dot offline">Backend: provjera…</span>
+    <span id="geoStatus" class="status-dot">Lokacija: nepoznata</span>
+  </div>
+
+  <!-- GLAVNA MREŽA KARTICA (3 u redu, vertikalni scroll dozvoljen) -->
   <main class="grid">
 
-    <!-- BOOKING -->
-    <section class="card booking">
-      <h2>Accommodation &amp; Trips</h2>
+    <!-- RED 1: NAVIGACIJA / BOOKING / STREET VIEW -->
+
+    <!-- NAVIGACIJA -->
+    <section class="card navigation">
+      <h2 data-i18n="card.navigation">Navigacija – TBW NAVI PRO MAX</h2>
+      <div id="navMap" class="map"></div>
       <div class="row gap">
-        <div class="col"><label>Destination</label><input id="hotelCity" class="input" placeholder="Split, Zadar, Zagreb…" /></div>
-        <div class="col"><label>Check-in</label><input id="arrive" class="input" type="date" /></div>
-        <div class="col"><label>Check-out</label><input id="depart" class="input" type="date" /></div>
-        <div class="col"><label>Guests</label><input id="guests" class="input" type="number" min="1" value="2" /></div>
+        <input id="routeFrom" class="input" placeholder="Od (prazno = moja lokacija)" />
+        <input id="routeTo" class="input" placeholder="Do (adresa, grad, hotel…)" />
       </div>
-      <div class="row between">
-        <div class="tags"><span>🚘 Parking</span><span>🌊 Sea view</span><span>👨‍👩‍👧 Family</span></div>
-        <button id="bookBtn" class="btn secondary">Search on partners</button>
+      <div class="row gap" style="margin-top: 6px;">
+        <button id="navGo" class="btn primary" data-i18n="btn.navGo">KRENI</button>
+        <button id="navHud" class="btn ghost" data-i18n="btn.navHud">HUD način</button>
+        <button id="navExit" class="btn ghost danger" data-i18n="btn.navExit">Prekini</button>
+      </div>
+      <div class="row gap" style="margin-top: 4px;">
+        <button id="navVoice" class="btn voice" data-i18n="btn.navVoice">
+          Hey TBW – govorni suvozač
+        </button>
+      </div>
+      <div id="navStatus" class="small-text"></div>
+    </section>
+
+    <!-- BOOKING / SMJEŠTAJ -->
+    <section class="card booking">
+      <h2 data-i18n="card.booking">Smještaj &amp; putovanja</h2>
+      <div class="row gap">
+        <div class="col">
+          <label data-i18n="label.destination">Odredište</label>
+          <input id="hotelCity" class="input" placeholder="Split, Zadar, Zagreb…" />
+        </div>
+        <div class="col">
+          <label data-i18n="label.checkin">Check-in</label>
+          <input id="arrive" class="input" type="date" />
+        </div>
+        <div class="col">
+          <label data-i18n="label.checkout">Check-out</label>
+          <input id="depart" class="input" type="date" />
+        </div>
+        <div class="col">
+          <label data-i18n="label.guests">Gosti</label>
+          <input id="guests" class="input" type="number" min="1" value="2" />
+        </div>
+      </div>
+      <div class="row between" style="margin-top: 6px;">
+        <div class="tags small-text">
+          <span>🚘 Parking</span><span>🌊 Pogled na more</span><span>👨‍👩‍👧 Obiteljski</span>
+        </div>
+        <button id="bookBtn" class="btn secondary" data-i18n="btn.bookingSearch">
+          Pronađi smještaj
+        </button>
       </div>
       <div id="hotelResults" class="list small-text"></div>
     </section>
 
-    <!-- NAVIGATION -->
-    <section class="card navigation">
-      <h2>Navigation – TBW NAVI PRO MAX</h2>
-      <div id="navMap" class="map"></div>
-      <div class="row gap">
-        <input id="routeFrom" class="input" placeholder="From (optional)" />
-        <input id="routeTo" class="input" placeholder="To (address, POI, hotel…)" />
-      </div>
-      <div class="row gap">
-        <button id="navGo" class="btn primary">GO</button>
-        <button id="navHud" class="btn ghost">HUD mode</button>
-        <button id="navExit" class="btn ghost danger">Exit navigation</button>
-      </div>
-      <div class="row gap"><button id="navVoice" class="btn voice">Hey TBW – talk to co-driver</button></div>
-      <div id="navStatus" class="small-text"></div>
-    </section>
-
-    <!-- WEATHER -->
-    <section class="card weather">
-      <h2>Weather &amp; Sea status</h2>
-      <div id="weatherBox" class="weather-box">Loading weather…</div>
-      <div id="seaBox" class="sea-box small-text"></div>
-    </section>
-
-    <!-- STREET VIEW -->
+    <!-- STREET VIEW (pozicija gdje je prije bilo vrijeme) -->
     <section class="card streetview">
-      <h2>TBW Custom Street View</h2>
+      <h2 data-i18n="card.streetview">TBW Street View</h2>
       <div id="streetView" class="street"></div>
-      <div class="small-text">Tap to open full-screen Street View.</div>
+      <div class="small-text" data-i18n="hint.streetview">
+        Dodirnite za otvaranje prikaza u cijelom ekranu.
+      </div>
     </section>
 
-    <!-- PHOTOS -->
-    <section class="card photos">
-      <h2>Photos &amp; Attractions</h2>
-      <div id="photoGrid" class="photo-grid">Loading photos…</div>
-      <div id="poiBox" class="poi-list small-text"></div>
-    </section>
+    <!-- RED 2: PROMET / SERVISI / VRIJEME -->
 
-    <!-- TRAFFIC -->
+    <!-- PROMET UŽIVO -->
     <section class="card traffic">
-      <h2>Live Traffic &amp; Incidents</h2>
+      <h2 data-i18n="card.traffic">Promet uživo</h2>
       <div id="trafficMap" class="map small-map"></div>
       <div id="trafficInfo" class="small-text"></div>
     </section>
 
-    <!-- SERVICES -->
+    <!-- SERVISI (benzinske, trgovine, vulkanizeri...) -->
     <section class="card services">
-      <h2>Services &amp; Emergency</h2>
+      <h2 data-i18n="card.services">Servisi &amp; trgovine</h2>
       <div id="servicesBox" class="list small-text">
-        Loading shops, gas stations, hospitals…
+        Učitavam servise, trgovine i benzinske…
       </div>
     </section>
 
-    <!-- MINI MAP -->
-    <section class="card overview-map">
-      <h2>Overview Map</h2>
-      <div id="miniMap" class="map small-map"></div>
+    <!-- VRIJEME (sad na mjestu gdje je prije bilo stanje mora) -->
+    <section class="card weather">
+      <h2 data-i18n="card.weather">Vrijeme</h2>
+      <div class="weather-widget">
+        <canvas id="weatherAnim"></canvas>
+        <div id="weatherInfo" class="weather-info">
+          <div id="weatherLocation" class="weather-location">Učitavam...</div>
+          <div id="weatherTemp" class="weather-temp"></div>
+          <div id="weatherDesc" class="weather-desc"></div>
+          <div id="weatherExtra" class="weather-extra"></div>
+        </div>
+      </div>
     </section>
 
-    <!-- AI CHAT -->
+    <!-- RED 3: STANJE MORA & MARINE / JAVNI PRIJEVOZ / AERODROMI -->
+
+    <!-- STANJE MORA + TRAJEKTI + MARINE -->
+    <section class="card sea">
+      <h2 data-i18n="card.sea">More &amp; trajekti</h2>
+      <div id="seaBox" class="sea-box small-text">
+        Učitavam stanje mora, temperature i trajekte…
+      </div>
+    </section>
+
+    <!-- JAVNI PRIJEVOZ -->
+    <section class="card transit">
+      <h2 data-i18n="card.transit">Javni prijevoz</h2>
+      <div class="transit-widget">
+        <div class="transit-line">
+          <div class="transit-bus"></div>
+        </div>
+        <div id="transitInfo" class="transit-info">
+          Učitavam linije javnog prijevoza…
+        </div>
+      </div>
+    </section>
+
+    <!-- AERODROMI -->
+    <section class="card airport">
+      <h2 data-i18n="card.airport">Aerodromi</h2>
+      <div class="airport-widget">
+        <div class="airport-sky">
+          <div class="airport-plane"></div>
+          <div class="airport-cloud cloud-1"></div>
+          <div class="airport-cloud cloud-2"></div>
+        </div>
+        <div id="airportInfo" class="airport-info">
+          <div id="airportMain" class="airport-main">Letovi se učitavaju...</div>
+          <div id="airportSub" class="airport-sub"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RED 4: HITNE / RDS ALARM / AI ASISTENT -->
+
+    <!-- HITNE SLUŽBE -->
+    <section class="card emergency">
+      <h2 data-i18n="card.emergency">Hitne službe</h2>
+      <div class="emergency-widget">
+        <div class="siren">
+          <div class="siren-light"></div>
+          <div class="siren-base"></div>
+        </div>
+        <div id="emergencyInfo" class="emergency-info">
+          Učitavam obližnje hitne službe…
+        </div>
+      </div>
+    </section>
+
+    <!-- RDS ALARM -->
+    <section class="card rds">
+      <h2 data-i18n="card.rds">RDS alarm</h2>
+      <div id="rdsWidget" class="rds-widget rds-normal">
+        <div class="rds-icon">📻</div>
+        <div class="rds-text">
+          <div id="rdsStatus" class="rds-status">Nema aktivnih RDS alarma.</div>
+          <div id="rdsDetail" class="rds-detail"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI ASISTENT -->
     <section class="card full ai-chat">
-      <h2>TBW AI Assistant</h2>
+      <h2 data-i18n="card.ai">TBW AI Asistent</h2>
       <div id="messages" class="messages"></div>
       <div class="chat-input-row">
-        <input id="assistantInput" class="input" placeholder="Ask anything…" />
-        <button id="assistantVoice" class="icon-btn">🎤</button>
-        <button id="sendBtn" class="btn primary">Send</button>
+        <input 
+          id="assistantInput" 
+          class="input" 
+          placeholder="Pitaj bilo što: najbolje plaže, skrivene lokacije, stanje na cestama, letovi…"
+        />
+        <button id="assistantVoice" class="icon-btn" title="Glasovni unos za AI">🎤</button>
+        <button id="sendBtn" class="btn primary" data-i18n="btn.aiSend">Pošalji</button>
       </div>
     </section>
 
   </main>
 
-  <!-- LEGAL MODAL -->
+  <!-- LEGAL CENTER MODAL -->
   <div id="legalModal" class="legal-modal">
     <div class="legal-modal-content">
       <span id="legalClose" class="legal-close">&times;</span>
       <h2>TBW AI PREMIUM – Legal Center</h2>
-      <p>Select document:</p>
+      <p>Odaberite dokument:</p>
       <div class="legal-modal-links">
-        <a href="/legal/terms.html" target="_blank">Terms of Service</a>
-        <a href="/legal/privacy.html" target="_blank">Privacy Policy</a>
-        <a href="/legal/cookies.html" target="_blank">Cookie Policy</a>
-        <a href="/legal/disclaimer.html" target="_blank">Legal Disclaimer</a>
+        <a href="/legal/terms.html" target="_blank">Uvjeti korištenja</a>
+        <a href="/legal/privacy.html" target="_blank">Politika privatnosti</a>
+        <a href="/legal/cookies.html" target="_blank">Kolačići</a>
+        <a href="/legal/disclaimer.html" target="_blank">Pravno odricanje odgovornosti</a>
       </div>
     </div>
   </div>
 
   <!-- FOOTER -->
   <footer class="legal-footer">
-    <div class="legal-links"><a href="#" id="openLegal">Legal Center</a></div>
+    <div class="legal-links">
+      <a href="#" id="openLegal">Legal Center</a>
+    </div>
     <div class="legal-owner">
-      © 2025 <strong>TBW AI PREMIUM</strong> – All Rights Reserved.<br />
-      Founder &amp; Owner: <strong>Dražen Halar</strong> – <strong>ai.tbw.booking@gmail.com</strong>
+      © 2025 <strong>TBW AI PREMIUM</strong> – Sva prava pridržana.<br />
+      Smart Travel, Navigation &amp; Global Booking Assistant.<br />
+      Osnivač &amp; vlasnik: <strong>Dražen Halar</strong> – <strong>ai.tbw.booking@gmail.com</strong>
     </div>
   </footer>
 
+  <!-- SCRIPTS -->
   <script src="/navi.js" defer></script>
   <script src="/app.js" defer></script>
 </body>
