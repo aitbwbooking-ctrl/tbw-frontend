@@ -111,7 +111,6 @@ function runIntro() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, w, h);
 
-    // stars
     for (const s of stars) {
       s.x -= s.z * 0.8;
       if (s.x < 0) {
@@ -122,7 +121,6 @@ function runIntro() {
       ctx.fillRect(s.x, s.y, 1.6 * s.z, 1.6 * s.z);
     }
 
-    // comet
     comet.x += comet.vx;
     comet.y += comet.vy;
     ctx.beginPath();
@@ -148,7 +146,6 @@ function runIntro() {
     if (dt < 4500) {
       requestAnimationFrame(frame);
     } else {
-      // flash
       ctx.fillStyle = "white";
       ctx.beginPath();
       ctx.arc(comet.x, comet.y, 220, 0, Math.PI * 2);
@@ -184,12 +181,9 @@ function applyLangTexts() {
   qs("airportTitle").textContent = t("airport");
   qs("heroLine").textContent = t("heroLine");
 
-  // static hints
   if (!qs("navContent").dataset.locked) qs("navContent").textContent = t("noRoute");
-  if (!qs("bookingContent").dataset.locked)
-    qs("bookingContent").textContent = t("bookingHint");
-  if (!qs("streetContent").dataset.locked)
-    qs("streetContent").textContent = t("streetHint");
+  if (!qs("bookingContent").dataset.locked) qs("bookingContent").textContent = t("bookingHint");
+  if (!qs("streetContent").dataset.locked) qs("streetContent").textContent = t("streetHint");
 }
 
 function setLang(lang) {
@@ -225,9 +219,8 @@ function initGeo() {
   }
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      el.textContent = `Lokacija: ${pos.coords.latitude.toFixed(
-        3
-      )}, ${pos.coords.longitude.toFixed(3)}`;
+      el.textContent =
+        `Lokacija: ${pos.coords.latitude.toFixed(3)}, ${pos.coords.longitude.toFixed(3)}`;
     },
     () => {
       el.textContent = "Lokacija: onemogućena";
@@ -290,7 +283,9 @@ async function loadTraffic() {
   try {
     const data = await callApi("traffic");
     box.innerHTML = `
-      <div>Status: <strong>${data.status || data.traffic_status || "normal"}</strong></div>
+      <div>Status: <strong>${
+        data.status || data.traffic_status || "normal"
+      }</strong></div>
       <div>Brzina: ${data.speed || "—"} km/h</div>
       <div>Kašnjenje: ${data.delay_min || 0} min</div>
       <div style="margin-top:4px;">${data.note || ""}</div>
@@ -374,7 +369,6 @@ async function loadAirport() {
   }
 }
 
-// booking i nav su za sada “frontend only”
 function initStaticCards() {
   const navContent = qs("navContent");
   navContent.textContent = t("noRoute");
@@ -399,7 +393,7 @@ async function loadAll() {
   loadAirport();
 }
 
-// ----- WEATHER ANIMATION (simple) -----
+// ----- WEATHER ANIMATION -----
 
 let weatherAnimFrame = null;
 
@@ -460,7 +454,7 @@ function startWeatherAnim(condition) {
   loop();
 }
 
-// ----- MODAL (FULLSCREEN CARD) -----
+// ----- MODAL -----
 
 function initModal() {
   const modal = qs("cardModal");
@@ -479,30 +473,27 @@ function initModal() {
   document.querySelectorAll(".card").forEach((card) => {
     card.addEventListener("click", () => {
       const id = card.id;
-      if (id === "cardNav") {
-        openFromCard(id, "navTitle", "navContent");
-      } else if (id === "cardBooking") {
-        // otvorimo booking.com u novom tabu
+      if (id === "cardNav") openFromCard(id, "navTitle", "navContent");
+      else if (id === "cardBooking") {
         const q = encodeURIComponent(currentCity);
         window.open(
           `https://www.booking.com/searchresults.html?ss=${q}`,
           "_blank"
         );
-      } else if (id === "cardStreet") {
+      } else if (id === "cardStreet")
         openFromCard(id, "streetTitle", "streetContent");
-      } else if (id === "cardWeather") {
+      else if (id === "cardWeather")
         openFromCard(id, "weatherTitle", "weatherContent");
-      } else if (id === "cardTraffic") {
+      else if (id === "cardTraffic")
         openFromCard(id, "trafficTitle", "trafficContent");
-      } else if (id === "cardSea") {
+      else if (id === "cardSea")
         openFromCard(id, "seaTitle", "seaContent");
-      } else if (id === "cardServices") {
+      else if (id === "cardServices")
         openFromCard(id, "servicesTitle", "servicesContent");
-      } else if (id === "cardTransit") {
+      else if (id === "cardTransit")
         openFromCard(id, "transitTitle", "transitContent");
-      } else if (id === "cardAirport") {
+      else if (id === "cardAirport")
         openFromCard(id, "airportTitle", "airportContent");
-      }
     });
   });
 
@@ -512,7 +503,7 @@ function initModal() {
   });
 }
 
-// ----- VOICE (SEARCH + SIMPLE ASSISTANT) -----
+// ----- VOICE -----
 
 let recognition = null;
 
@@ -556,24 +547,10 @@ function speak(text) {
 
 function initVoiceButtons() {
   const searchVoiceBtn = qs("searchVoiceBtn");
-  const aiVoiceBtn = qs("aiVoiceBtn");
   const searchInput = qs("globalSearch");
 
   if (searchVoiceBtn) {
     searchVoiceBtn.onclick = () => startMicFor(searchInput);
-  }
-
-  if (aiVoiceBtn) {
-    aiVoiceBtn.onclick = async () => {
-      // vrlo jednostavan demo: pročita stanje prometa i vremena
-      const weatherText = qs("weatherContent").innerText;
-      const trafficText = qs("trafficContent").innerText;
-      const msg =
-        currentLang === "hr"
-          ? `Za ${currentCity}: ${weatherText}. Promet: ${trafficText}.`
-          : `For ${currentCity}: ${weatherText}. Traffic: ${trafficText}.`;
-      speak(msg);
-    };
   }
 }
 
@@ -596,18 +573,9 @@ function initSearch() {
   });
 }
 
-// ----- SERVICE WORKER -----
-
-function initSW() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
-  }
-}
-
 // ----- INIT -----
 
 document.addEventListener("DOMContentLoaded", () => {
-  // intro
   const introSeen = localStorage.getItem("tbw_intro_seen");
   if (!introSeen) {
     localStorage.setItem("tbw_intro_seen", "1");
@@ -626,28 +594,14 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // language
   qs("langHR").onclick = () => setLang("hr");
   qs("langEN").onclick = () => setLang("en");
   applyLangTexts();
   initStaticCards();
-
-  // geo + status
   initGeo();
-
-  // search
   initSearch();
-
-  // speech
   initSpeech();
   initVoiceButtons();
-
-  // modal
   initModal();
-
-  // SW
-  initSW();
-
-  // initial load
   loadAll();
 });
