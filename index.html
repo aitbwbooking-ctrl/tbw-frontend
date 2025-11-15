@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TBW AI PREMIUM</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/style.css">
+    <link rel="manifest" href="/manifest.json">
 
+    <!-- Service Worker -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js");
+        }
+    </script>
+
+    <!-- App Logic -->
     <script defer src="/app.js"></script>
 </head>
-
 <body>
 
     <!-- INTRO SCREEN -->
@@ -25,100 +32,83 @@
         <div class="topLeft">TBW AI PREMIUM</div>
 
         <div class="topRight">
-            <button class="langSwitcher" id="langHR">HR</button>
-            <button class="langSwitcher" id="langEN">EN</button>
+            <button class="langSwitch" id="langHR">HR</button>
+            <button class="langSwitch" id="langEN">EN</button>
             <button id="micBtn" class="mic">🎤</button>
         </div>
     </header>
 
-    <!-- ALERT BAR -->
+    <!-- TICKER -->
     <div id="ticker">
-        <span id="tickerContent">Učitavanje upozorenja...</span>
+        <span id="tickerContent">Učitavanje upozorenja…</span>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="container">
-
-        <!-- SEARCH BOX -->
-        <div class="searchBox">
-            <input id="globalSearch" placeholder="Pretraži (Split, apartmani...)" />
-            <button id="searchBtn" class="searchBtn">Traži</button>
-            <button id="voiceSearch" class="micInput">🎤</button>
-        </div>
-
-        <!-- ROW 1 -->
-        <div class="cardsRow">
-
-            <!-- NAVIGACIJA -->
-            <div class="card" id="navBox">
-                <h3>Navigacija</h3>
-                <div id="navStatus">Nema aktivne rute</div>
-            </div>
-
-            <!-- REZERVACIJE -->
-            <div class="card" id="bookingBox">
-                <h3>Rezervacija smještaja</h3>
-                <div id="bookingInfo">Dodirni za prikaz Booking.com ponude</div>
-            </div>
-
-            <!-- STREET VIEW -->
-            <div class="card" id="streetBox">
-                <h3>Street View</h3>
-                <img id="streetImg" src="/assets/street/default.jpg" class="streetPreview" />
-                <div>Klikni za prikaz trenutne destinacije</div>
-            </div>
-
-        </div>
-
-        <!-- ROW 2 -->
-        <div class="cardsRow">
-
-            <!-- VRIJEME -->
-            <div class="card" id="weatherBox">
-                <h3>Vrijeme</h3>
-                <div class="weatherContent" id="weatherContent">Učitavanje...</div>
-            </div>
-
-            <!-- PROMET UŽIVO -->
-            <div class="card" id="trafficBox">
-                <h3>Promet uživo</h3>
-                <div id="trafficContent">Učitavanje...</div>
-            </div>
-
-            <!-- STANJE MORA -->
-            <div class="card" id="seaBox">
-                <h3>Stanje mora & trajekti</h3>
-                <div id="seaContent">Učitavanje...</div>
-            </div>
-
-        </div>
-
-        <!-- ROW 3 -->
-        <div class="cardsRow">
-
-            <div class="card" id="servicesBox">
-                <h3>Servisi</h3>
-                <div id="servicesContent">Učitavanje...</div>
-            </div>
-
-            <div class="card" id="transitBox">
-                <h3>Javni prijevoz</h3>
-                <div id="transitContent">Učitavanje...</div>
-            </div>
-
-            <div class="card" id="airportBox">
-                <h3>Aerodromi & RDS alarmi</h3>
-                <div id="airportContent">Učitavanje...</div>
-            </div>
-
-        </div>
-
+    <!-- SEARCH BAR -->
+    <div class="searchBox">
+        <input id="globalSearch" placeholder="Pretraži (Split, apartmani…)" />
+        <button id="searchBtn" class="searchBtn">Traži</button>
+        <button id="voiceBtn" class="micInput">🎤</button>
     </div>
 
-    <!-- FULLSCREEN MODAL -->
-    <div id="fullscreenModal">
-        <button id="closeModal">✖</button>
-        <div id="modalContent"></div>
+    <!-- MAIN GRID -->
+    <div class="cardsGrid">
+
+        <!-- 1. NAVIGACIJA -->
+        <div class="card bigCard" id="navCard">
+            <h3>Navigacija</h3>
+            <div id="navStatus">Nema aktivne rute</div>
+            <button id="startNav">Pokreni</button>
+            <button id="stopNav">Zaustavi</button>
+        </div>
+
+        <!-- 2. BOOKING -->
+        <div class="card bigCard" id="bookingCard">
+            <h3>Rezervacija smještaja</h3>
+            <div id="bookingInfo">Dodirni za prikaz Booking.com ponude</div>
+        </div>
+
+        <!-- 3. STREET VIEW -->
+        <div class="card bigCard" id="streetCard">
+            <h3>Street View</h3>
+            <div id="streetPreview">Klikni za prikaz trenutne destinacije</div>
+        </div>
+
+        <!-- 4. VRIJEME -->
+        <div class="card" id="weatherCard">
+            <h3>Vrijeme</h3>
+            <div id="weatherBox">Učitavanje...</div>
+        </div>
+
+        <!-- 5. PROMET -->
+        <div class="card" id="trafficCard">
+            <h3>Promet uživo</h3>
+            <div id="trafficBox">Učitavanje...</div>
+        </div>
+
+        <!-- 6. STANJE MORA -->
+        <div class="card" id="seaCard">
+            <h3>Stanje mora</h3>
+            <div id="seaBox">Učitavanje...</div>
+        </div>
+
+        <!-- 7. SERVISI -->
+        <div class="card" id="servicesCard">
+            <h3>Servisi</h3>
+            <div id="servicesBox">Učitavanje...</div>
+        </div>
+
+        <!-- 8. JAVNI PRIJEVOZ -->
+        <div class="card" id="transitCard">
+            <h3>Javni prijevoz</h3>
+            <div id="transitBox">Učitavanje...</div>
+        </div>
+
+        <!-- 9. AERODROMI & RDS -->
+        <div class="card" id="airportCard">
+            <h3>Aerodromi & RDS alarmi</h3>
+            <div id="airportBox">Učitavanje...</div>
+        </div>
+
     </div>
 
 </body>
