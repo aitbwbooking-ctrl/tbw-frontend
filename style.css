@@ -1,301 +1,288 @@
-/* ===========================================
-   GLOBAL
-=========================================== */
-
+/* RESET */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Inter", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    background: #0b0f14;
-    color: #e8e8e8;
-    overflow-x: hidden;
-    padding-bottom: 120px; 
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #001b30 0, #00060c 55%, #000000 100%);
+  color: #e0f7ff;
+  min-height: 100vh;
 }
 
-h3 {
-    font-weight: 600;
-    margin-bottom: 6px;
-}
+/* INTRO */
 
-/* ===========================================
-   INTRO SCREEN
-=========================================== */
-
-#introOverlay {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    flex-direction: column;
+.intro {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 #introCanvas {
-    width: 60%;
-    height: 60%;
+  position: absolute;
+  inset: 0;
 }
 
-#introAudio {
-    display: none;
+.intro-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
 }
 
-#skipIntro {
-    margin-top: 20px;
-    padding: 10px 25px;
-    border: none;
-    background: #00e0c0;
-    color: #000;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
+.intro-logo {
+  width: 120px;
+  margin-bottom: 16px;
 }
 
-/* ===========================================
-   TOP BAR
-=========================================== */
+.intro-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin-bottom: 8px;
+}
+
+.intro-subtitle {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-bottom: 18px;
+}
+
+/* BUTTONS / ICONS */
+
+.btn {
+  border-radius: 999px;
+  border: none;
+  padding: 7px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #00e5ff, #00bcd4);
+  color: #00131f;
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1px solid #66d9ff;
+  color: #e0f7ff;
+}
+
+.iconBtn {
+  background: #001a24;
+  border-radius: 999px;
+  border: 1px solid rgba(0,255,255,0.4);
+  padding: 4px 10px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #00e5ff;
+}
+
+/* TOP BAR */
 
 .topBar {
-    width: 100%;
-    height: 58px;
-    background: #0f141a;
-    border-bottom: 1px solid #171d26;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    padding: 0 18px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(0, 10, 20, 0.96);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .topLeft {
-    font-size: 20px;
-    font-weight: 700;
+  display: flex;
+  flex-direction: column;
 }
 
-.topRight button {
-    margin-left: 8px;
+.appTitle {
+  font-size: 18px;
+  letter-spacing: 0.16em;
 }
 
-.langSwitch {
-    background: #1b242f;
-    color: white;
-    padding: 6px 14px;
-    font-size: 14px;
-    border: 1px solid #2a3442;
-    border-radius: 8px;
-    cursor: pointer;
+.topSubtitle {
+  font-size: 11px;
+  opacity: 0.75;
 }
 
-.langSwitch.active {
-    background: #00e0c0;
-    color: #000;
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.mic {
-    font-size: 18px;
-    background: #00e0c0;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    border: none;
-    cursor: pointer;
+.langSwitcher {
+  border-radius: 999px;
+  border: 1px solid rgba(0,255,255,0.4);
+  background: transparent;
+  color: #e0f7ff;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
 }
 
-/* ===========================================
-   ALERT TICKER
-=========================================== */
+.langSwitcher.active {
+  background: #00e5ff;
+  color: #00131f;
+}
+
+/* TICKER */
 
 #ticker {
-    width: 100%;
-    background: #11161d;
-    border-bottom: 1px solid #1b2633;
-    padding: 8px 12px;
-    white-space: nowrap;
-    overflow: hidden;
+  background: rgba(0, 20, 35, 0.9);
+  padding: 6px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(0,255,255,0.15);
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 #tickerContent {
-    display: inline-block;
-    animation: scroll 14s linear infinite;
+  display: inline-block;
+  animation: ticker 18s linear infinite;
 }
 
-@keyframes scroll {
-    from { transform: translateX(100%); }
-    to   { transform: translateX(-100%); }
+@keyframes ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-140%); }
 }
 
-/* ===========================================
-   SEARCH BOX
-=========================================== */
+/* MAIN LAYOUT */
+
+.mainWrapper {
+  padding: 14px;
+}
+
+/* SEARCH */
 
 .searchBox {
-    width: 96%;
-    margin: 18px auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 #globalSearch {
-    flex: 1;
-    padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid #293340;
-    background: #0f141a;
-    color: white;
-    outline: none;
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.6);
+  color: #e0f7ff;
+  font-size: 14px;
 }
 
-.searchBtn {
-    padding: 12px 18px;
-    border-radius: 10px;
-    background: #00e0c0;
-    color: black;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.micInput {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: #00e0c0;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-/* ===========================================
-   GRID / CARDS
-=========================================== */
+/* CARDS GRID */
 
 .cardsGrid {
-    width: 94%;
-    margin: 0 auto;
-    margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
+.cardsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .card {
-    padding: 18px;
-    background: #12181f;
-    border: 1px solid #1e2834;
-    border-radius: 14px;
-    min-height: 110px;
-    transition: transform 0.15s ease, border 0.15s ease;
+  background: rgba(0, 11, 18, 0.9);
+  border-radius: 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.70);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border 0.18s ease;
 }
 
 .card:hover {
-    transform: scale(1.02);
-    border-color: #00e0c0;
-    cursor: pointer;
+  transform: translateY(-2px);
+  border-color: rgba(0,255,255,0.35);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.9);
 }
 
-.bigCard {
-    grid-column: span 2;
+.card h3 {
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
-#streetPreview, 
-#bookingInfo,
-#navStatus {
-    color: #9ba7b6;
-    font-size: 15px;
+.cardBody {
+  font-size: 12px;
+  opacity: 0.92;
 }
 
-/* ===========================================
-   FULLSCREEN CARD VIEW
-=========================================== */
+/* WEATHER BIG NUMBER */
 
-.fullscreenCard {
-    position: fixed;
-    inset: 0;
-    background: #090c10;
-    z-index: 9998;
-    padding: 25px;
+.weatherContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-    display: flex;
+/* MODAL */
+
+.modal.hidden {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalInner {
+  background: #00141f;
+  border-radius: 18px;
+  padding: 18px;
+  width: min(480px, 94%);
+  border: 1px solid rgba(0,255,255,0.4);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.95);
+}
+
+.modalInner h2 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.modalClose {
+  float: right;
+  border: none;
+  background: transparent;
+  color: #e0f7ff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  .cardsRow {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .topBar {
     flex-direction: column;
-    overflow-y: auto;
-}
+    align-items: flex-start;
+    gap: 6px;
+  }
 
-.fullscreenClose {
-    background: #00e0c0;
-    border: none;
-    padding: 12px 16px;
-    border-radius: 10px;
-    color: #000;
-    font-weight: bold;
-    align-self: flex-end;
-    cursor: pointer;
-}
-
-/* ===========================================
-   STREET VIEW OVERLAY WINDOW
-=========================================== */
-
-#streetFSContainer iframe {
-    width: 100%;
-    height: 80vh;
-    border-radius: 14px;
-    border: none;
-}
-
-/* ===========================================
-   WEATHER ANIMATIONS
-=========================================== */
-
-.weather-sun {
-    color: #ffe26a;
-    font-weight: bold;
-}
-
-.weather-rain {
-    animation: rain 0.5s infinite linear;
-}
-
-@keyframes rain {
-    from { opacity: 1; }
-    to { opacity: 0.3; }
-}
-
-.weather-snow {
-    animation: snow 1.4s infinite ease-in-out;
-}
-
-@keyframes snow {
-    0%   { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(20px); }
-}
-
-/* ===========================================
-   MOBILE RESPONSIVE FIXES
-=========================================== */
-
-@media (max-width: 540px) {
-
-    .bigCard {
-        grid-column: span 1;
-    }
-
-    #introCanvas {
-        width: 85%;
-        height: 85%;
-    }
-
-    .topLeft {
-        font-size: 18px;
-    }
+  .mainWrapper {
+    padding-bottom: 40px;
+  }
 }
