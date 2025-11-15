@@ -1,14 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8" />
-  <title>TBW AI PREMIUM</title>
+  <meta charset="utf-8" />
+  <title>TBW AI PREMIUM – Smart Travel & Navigation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- PWA / ICONS -->
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
-  <meta name="theme-color" content="#000710" />
+  <meta name="theme-color" content="#000a12" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- Icons for iOS / Android -->
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png" />
 
   <link rel="stylesheet" href="/style.css" />
 </head>
@@ -18,7 +21,7 @@
   <div id="introOverlay" class="intro">
     <canvas id="introCanvas"></canvas>
     <div class="intro-inner">
-      <img src="/assets/TBW.png" alt="TBW" class="intro-logo" />
+      <div class="intro-logo-circle">TBW</div>
       <div class="intro-title">TBW AI PREMIUM</div>
       <div class="intro-subtitle">
         Smart Travel · Navigation · Global Booking Assistant
@@ -31,129 +34,149 @@
   <!-- TOP BAR -->
   <header class="topBar">
     <div class="topLeft">
-      <span class="appTitle">TBW AI PREMIUM</span>
-      <span class="topSubtitle">
-        Prometna upozorenja · Vrijeme · Stanje mora · Rezervacije · Alert!
-      </span>
+      <div class="appTitle">TBW AI PREMIUM</div>
+      <div class="appSub">
+        <span id="heroLine">Prometna upozorenja · Vrijeme · Stanje mora · Rezervacije · Alert!</span>
+      </div>
     </div>
     <div class="topRight">
-      <button id="langHR" class="langSwitcher active">HR</button>
-      <button id="langEN" class="langSwitcher">EN</button>
-      <button id="micBtn" class="iconBtn">🎤</button>
+      <div id="backendStatus" class="statusDot">backend: …</div>
+      <div id="geoStatus" class="statusDot">lokacija: …</div>
+      <div class="langSwitch">
+        <button id="langHR" class="langBtn active">HR</button>
+        <button id="langEN" class="langBtn">EN</button>
+      </div>
+      <button id="aiVoiceBtn" class="roundIcon" title="Glasovni asistent">🎤</button>
     </div>
   </header>
 
   <!-- ALERT TICKER -->
   <div id="ticker">
-    <span id="tickerContent">Učitavanje upozorenja...</span>
+    <span id="tickerContent">Učitavanje upozorenja…</span>
   </div>
 
   <!-- MAIN CONTENT -->
-  <main class="mainWrapper">
+  <main class="container">
 
-    <!-- SEARCH BOX -->
+    <!-- SEARCH -->
     <section class="searchBox">
-      <input id="globalSearch" type="text"
-             placeholder="Pretraži (Split, apartmani...)" />
-      <button id="searchBtn" class="btn primary">Traži</button>
+      <input
+        id="globalSearch"
+        type="text"
+        placeholder="Pretraži (Split, apartmani, hotel…)"
+      />
+      <button id="searchBtn" class="btn primary" type="button">
+        Traži
+      </button>
+      <button id="searchVoiceBtn" class="roundIcon" type="button" title="Glasovno pretraživanje">
+        🎤
+      </button>
     </section>
 
-    <!-- CARDS GRID -->
-    <section class="cardsGrid">
+    <!-- ROW 1 -->
+    <section class="cardsRow">
 
-      <!-- ROW 1 -->
-      <div class="cardsRow">
-        <!-- Navigacija -->
-        <article class="card" id="cardNav" data-modal="nav">
-          <h3>Navigacija</h3>
-          <div class="cardBody" id="navContent">
-            Nema aktivne rute
-          </div>
-        </article>
+      <!-- NAVIGATION -->
+      <article class="card" id="cardNav" data-modal="nav">
+        <h3 id="navTitle">Navigacija</h3>
+        <div class="cardBody" id="navContent">
+          Nema aktivne rute.
+        </div>
+      </article>
 
-        <!-- Rezervacije -->
-        <article class="card" id="cardBooking" data-modal="booking">
-          <h3>Rezervacija smještaja</h3>
-          <div class="cardBody" id="bookingInfo">
-            Dodirni za prikaz Booking.com ponude
-          </div>
-        </article>
+      <!-- BOOKING -->
+      <article class="card" id="cardBooking" data-modal="booking">
+        <h3 id="bookingTitle">Rezervacija smještaja</h3>
+        <div class="cardBody" id="bookingContent">
+          Dodirni za prikaz Booking.com ponude.
+        </div>
+      </article>
 
-        <!-- Street View -->
-        <article class="card" id="cardStreet" data-modal="street">
-          <h3>Street View</h3>
-          <div class="cardBody" id="streetPreview">
-            Klikni za prikaz trenutne destinacije
-          </div>
-        </article>
-      </div>
+      <!-- STREET VIEW -->
+      <article class="card" id="cardStreet" data-modal="street">
+        <h3 id="streetTitle">Street View</h3>
+        <div class="cardBody" id="streetContent">
+          Klikni za prikaz trenutne destinacije.
+        </div>
+      </article>
+    </section>
 
-      <!-- ROW 2 -->
-      <div class="cardsRow">
-        <!-- Vrijeme -->
-        <article class="card" id="weatherBox" data-modal="weather">
-          <h3>Vrijeme</h3>
-          <div class="cardBody weatherContent">
-            Učitavanje...
-          </div>
-        </article>
+    <!-- ROW 2 -->
+    <section class="cardsRow">
 
-        <!-- Promet uživo -->
-        <article class="card" id="trafficCard" data-modal="traffic">
-          <h3>Promet uživo</h3>
-          <div class="cardBody" id="trafficContent">
-            Učitavanje...
-          </div>
-        </article>
+      <!-- WEATHER -->
+      <article class="card" id="cardWeather" data-modal="weather">
+        <h3 id="weatherTitle">Vrijeme</h3>
+        <div class="cardBody" id="weatherContent">
+          Učitavanje…
+        </div>
+        <canvas id="weatherAnim" class="weatherCanvas"></canvas>
+      </article>
 
-        <!-- Stanje mora -->
-        <article class="card" id="seaBox" data-modal="sea">
-          <h3>Stanje mora</h3>
-          <div class="cardBody" id="seaContent">
-            Učitavanje...
-          </div>
-        </article>
-      </div>
+      <!-- TRAFFIC -->
+      <article class="card" id="cardTraffic" data-modal="traffic">
+        <h3 id="trafficTitle">Promet uživo</h3>
+        <div class="cardBody" id="trafficContent">
+          Učitavanje…
+        </div>
+      </article>
 
-      <!-- ROW 3 -->
-      <div class="cardsRow">
-        <!-- Servisi -->
-        <article class="card" id="servicesBox" data-modal="services">
-          <h3>Servisi</h3>
-          <div class="cardBody" id="servicesContent">
-            Učitavanje...
-          </div>
-        </article>
+      <!-- SEA -->
+      <article class="card" id="cardSea" data-modal="sea">
+        <h3 id="seaTitle">Stanje mora &amp; trajekti</h3>
+        <div class="cardBody" id="seaContent">
+          Učitavanje…
+        </div>
+      </article>
+    </section>
 
-        <!-- Javni prijevoz -->
-        <article class="card" id="transitBox" data-modal="transit">
-          <h3>Javni prijevoz</h3>
-          <div class="cardBody" id="transitContent">
-            Učitavanje...
-          </div>
-        </article>
+    <!-- ROW 3 -->
+    <section class="cardsRow">
 
-        <!-- Aerodromi & RDS -->
-        <article class="card" id="airportBox" data-modal="airport">
-          <h3>Aerodromi &amp; RDS alarmi</h3>
-          <div class="cardBody" id="airportContent">
-            Učitavanje...
-          </div>
-        </article>
-      </div>
+      <!-- SERVICES -->
+      <article class="card" id="cardServices" data-modal="services">
+        <h3 id="servicesTitle">Servisi &amp; trgovine</h3>
+        <div class="cardBody" id="servicesContent">
+          Učitavanje…
+        </div>
+      </article>
 
+      <!-- TRANSIT -->
+      <article class="card" id="cardTransit" data-modal="transit">
+        <h3 id="transitTitle">Javni prijevoz</h3>
+        <div class="cardBody" id="transitContent">
+          Učitavanje…
+        </div>
+      </article>
+
+      <!-- AIRPORT + RDS -->
+      <article class="card" id="cardAirport" data-modal="airport">
+        <h3 id="airportTitle">Aerodromi &amp; RDS alarmi</h3>
+        <div class="cardBody" id="airportContent">
+          Učitavanje…
+        </div>
+      </article>
     </section>
   </main>
 
-  <!-- FULLSCREEN MODAL -->
-  <div id="modalOverlay" class="modal hidden">
+  <!-- FULLSCREEN CARD MODAL -->
+  <div id="cardModal" class="modal hidden">
     <div class="modalInner">
-      <button id="modalClose" class="modalClose">✕</button>
-      <h2 id="modalTitle"></h2>
-      <div id="modalBody"></div>
+      <button id="modalClose" class="modalClose">×</button>
+      <h2 id="modalTitle">Detalji</h2>
+      <div id="modalBody" class="modalBody"></div>
     </div>
   </div>
 
-  <script src="/app.js" defer></script>
+  <!-- FOOTER -->
+  <footer class="footer">
+    © 2025 TBW AI PREMIUM – All Rights Reserved ·
+    <a href="/legal/terms.html" target="_blank">Uvjeti</a> ·
+    <a href="/legal/privacy.html" target="_blank">Privatnost</a> ·
+    <a href="/legal/cookies.html" target="_blank">Kolačići</a> ·
+    <a href="/legal/disclaimer.html" target="_blank">Odricanje odgovornosti</a>
+  </footer>
+
+  <script defer src="/app.js"></script>
 </body>
 </html>
