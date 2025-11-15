@@ -1,186 +1,194 @@
 <!doctype html>
-<html lang="hr">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>TBW AI PREMIUM</title>
-  <meta name="theme-color" content="#0b1220" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.png" />
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <title>TBW AI PREMIUM – Smart Travel, Navigation & Global Booking Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#000a12" />
+  <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
+
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
 
-  <!-- CINEMATIC INTRO (5s): svemir + komet + supernova + logo -->
-  <div id="intro" class="intro">
-    <canvas id="spaceCanvas"></canvas>
-    <div id="logoReveal">TBW AI PREMIUM</div>
-    <audio id="introAudio" src="assets/sounds/intro.mp3" preload="auto"></audio>
+  <!-- INTRO -->
+  <div id="introOverlay" class="intro">
+    <canvas id="introCanvas"></canvas>
+    <div class="intro-inner">
+      <img src="/assets/TBW.png" alt="TBW Logo" class="intro-logo" />
+      <div class="intro-title">TBW AI PREMIUM</div>
+      <div class="intro-subtitle">Smart Travel, Navigation &amp; Global Booking Assistant</div>
+      <button id="skipIntro" class="btn ghost">Skip intro</button>
+    </div>
+    <audio id="introAudio" src="/assets/sounds/intro.mp3" preload="auto"></audio>
   </div>
 
-  <!-- APLIKACIJA -->
-  <div id="app" class="app hidden">
-
-    <!-- GORNJI FIKSNI DIO -->
-    <header class="topbar">
-      <div class="brand">
-        <span class="badge live">LIVE</span>
-        <img class="brand__logo" src="assets/logo-tbw.png" alt="TBW"/>
-        <span class="brand__title">TBW AI PREMIUM</span>
-      </div>
-
-      <div class="search">
-        <input id="cityInput" class="input" placeholder="Upišite grad (npr. Split, Karlovac)..." />
-        <button id="btnSearch" class="btn">Traži</button>
-        <button id="btnMic" class="btn btn--icon" title="Glasovna pretraga">🎤</button>
-      </div>
-
-      <div id="statusDot" class="status-dot" title="Backend status"></div>
-    </header>
-
-    <!-- POKRETNA TRAKA (sync: promet, nesreće, radari, trgovine, vrijeme) -->
-    <div id="ticker" class="ticker">
-      <div id="ticker-inner" class="ticker__inner"></div>
+  <!-- COOKIE BANNER -->
+  <div id="cookieBanner" class="cookie-banner">
+    <div class="cookie-text">This app uses cookies for better experience, security and AI features.</div>
+    <div class="cookie-btns">
+      <button id="cookieAccept" class="btn accept">Accept</button>
+      <button id="cookieReject" class="btn reject">Reject</button>
     </div>
+  </div>
 
-    <!-- GRID KARTICA (sve fiksno; na klik ide fullscreen) -->
-    <main class="grid">
-
-      <!-- NAVIGACIJA -->
-      <section class="card" data-card="nav">
-        <div class="card__head">
-          <h3>Navigacija</h3>
-          <div class="card__actions">
-            <button id="btnTraffic" class="btn btn--ghost">Promet</button>
-            <button id="btnExitNav" class="btn btn--ghost">EXIT</button>
-            <button class="btn btn--ghost card__max">Max</button>
-          </div>
-        </div>
-        <div class="card__body">
-          <div id="map" class="map"></div>
-          <div class="form-row">
-            <input id="startInput" class="input" placeholder="Polazište (opcionalno)" />
-            <input id="endInput" class="input" placeholder="Odredište" />
-            <button id="btnGo" class="btn btn--accent">GO</button>
-          </div>
-          <div class="quickchips">
-            <span class="chip" data-l="parking">Parking</span>
-            <span class="chip" data-l="punionice">Punionice</span>
-            <span class="chip" data-l="bolnice">Bolnice</span>
-            <span class="chip" data-l="trgovine">Trgovine</span>
-            <span class="chip" data-l="hitne">Hitne službe</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- REZERVACIJE -->
-      <section class="card" data-card="booking">
-        <div class="card__head">
-          <h3>Rezervacija smještaja</h3>
-          <button class="btn btn--ghost card__max">Max</button>
-        </div>
-        <div class="card__body">
-          <div class="form-row">
-            <input id="bookingCity" class="input" placeholder="Split / Zadar..." />
-          </div>
-          <div class="form-row">
-            <input id="dateFrom" type="date" class="input" />
-            <input id="dateTo" type="date" class="input" />
-            <select id="guests" class="input">
-              <option value="1">1 gost</option>
-              <option value="2" selected>2 gosta</option>
-              <option value="3">3 gosta</option>
-              <option value="4">4 gosta</option>
-            </select>
-          </div>
-          <div class="btn-row">
-            <button id="btnBookingSearch" class="btn">Pretraži</button>
-            <button id="btnBookingDirect" class="btn btn--accent">Rezerviraj</button>
-            <button id="btnBookingClear" class="btn btn--ghost">Očisti</button>
-          </div>
-          <p class="muted">Otvorit će Booking, Expedia, Airbnb… s već popunjenim filtrima.</p>
-        </div>
-      </section>
-
-      <!-- STREET VIEW -->
-      <section class="card" data-card="street">
-        <div class="card__head">
-          <h3>Street View</h3>
-          <button class="btn btn--ghost card__max">Max</button>
-        </div>
-        <div class="card__body">
-          <div id="street" class="street"></div>
-        </div>
-      </section>
-
-      <!-- VRIJEME • MORE • ZRAK -->
-      <section class="card" data-card="weather">
-        <div class="card__head">
-          <h3>Vrijeme • more • zrak</h3>
-          <button class="btn btn--ghost card__max">Max</button>
-        </div>
-        <div class="card__body" id="weatherBox">
-          <ul class="bullets" id="weatherList">
-            <li class="muted">Učitavam...</li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- PROMET UŽIVO -->
-      <section class="card" data-card="traffic">
-        <div class="card__head">
-          <h3>Promet uživo</h3>
-          <button class="btn btn--ghost card__max">Max</button>
-        </div>
-        <div class="card__body">
-          <div id="trafficMap" class="map"></div>
-        </div>
-      </section>
-
-      <!-- SERVISI & HITNE (uklj. stanje mora iz backend-a) -->
-      <section class="card" data-card="sea">
-        <div class="card__head">
-          <h3>Servisi &amp; Hitne • (More)</h3>
-          <button class="btn btn--ghost card__max">Max</button>
-        </div>
-        <div class="card__body">
-          <ul class="bullets" id="seaList">
-            <li>Temp mora —</li>
-            <li>Valovi —</li>
-            <li>Vjetar —</li>
-          </ul>
-
-          <div class="services">
-            <button class="btn btn--tiny" data-svc="policija">Policija</button>
-            <button class="btn btn--tiny" data-svc="hitna">Hitna</button>
-            <button class="btn btn--tiny" data-svc="vatrogasci">Vatrogasci</button>
-            <button class="btn btn--tiny" data-svc="servisi">Servisi</button>
-          </div>
-
-          <div id="servicesList" class="svc-list"></div>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- MODAL FULLSCREEN -->
-    <div id="modal" class="modal hidden">
-      <div class="modal__inner">
-        <button id="modalClose" class="btn btn--ghost modal__close">✕</button>
-        <div id="modalContent"></div>
+  <!-- TOP TICKER BAR -->
+  <div id="topBar" class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-left">
+        <span class="live-dot"></span>
+        <span class="live-text">TBW LIVE</span>
+      </div>
+      <div class="topbar-ticker">
+        <div id="tickerContent" class="ticker-content">Loading alerts…</div>
       </div>
     </div>
   </div>
 
-  <script src="app.js" defer></script>
-  <script>
-    // PWA regist.
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(()=>{});
-    }
-  </script>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <img src="/assets/TBW.png" alt="TBW" class="brand-logo" />
+      <div class="brand-text">
+        <h1>TBW AI PREMIUM</h1>
+        <div class="brand-sub">Smart Travel, Navigation &amp; Global Booking Assistant</div>
+      </div>
+    </div>
+
+    <div class="main-search">
+      <div class="search-input-wrap">
+        <input id="globalSearch" type="text" placeholder="Where do you want to go? (city, hotel, POI…)" />
+        <button id="micBtn" class="icon-btn">🎤</button>
+      </div>
+      <button id="searchBtn" class="btn primary">Search / Go</button>
+    </div>
+  </header>
+
+  <!-- STATUS -->
+  <div class="status-strip">
+    <span id="backendStatus" class="status-dot offline">Backend: checking…</span>
+    <span id="geoStatus" class="status-dot">Location: unknown</span>
+  </div>
+
+  <!-- MAIN GRID -->
+  <main class="grid">
+
+    <!-- BOOKING -->
+    <section class="card booking">
+      <h2>Accommodation &amp; Trips</h2>
+      <div class="row gap">
+        <div class="col"><label>Destination</label><input id="hotelCity" class="input" placeholder="Split, Zadar, Zagreb…" /></div>
+        <div class="col"><label>Check-in</label><input id="arrive" class="input" type="date" /></div>
+        <div class="col"><label>Check-out</label><input id="depart" class="input" type="date" /></div>
+        <div class="col"><label>Guests</label><input id="guests" class="input" type="number" min="1" value="2" /></div>
+      </div>
+      <div class="row between">
+        <div class="tags"><span>🚘 Parking</span><span>🌊 Sea view</span><span>👨‍👩‍👧 Family</span></div>
+        <button id="bookBtn" class="btn secondary">Search on partners</button>
+      </div>
+      <div id="hotelResults" class="list small-text"></div>
+    </section>
+
+    <!-- NAVIGATION -->
+    <section class="card navigation">
+      <h2>Navigation – TBW NAVI PRO MAX</h2>
+      <div id="navMap" class="map"></div>
+      <div class="row gap">
+        <input id="routeFrom" class="input" placeholder="From (optional)" />
+        <input id="routeTo" class="input" placeholder="To (address, POI, hotel…)" />
+      </div>
+      <div class="row gap">
+        <button id="navGo" class="btn primary">GO</button>
+        <button id="navHud" class="btn ghost">HUD mode</button>
+        <button id="navExit" class="btn ghost danger">Exit navigation</button>
+      </div>
+      <div class="row gap"><button id="navVoice" class="btn voice">Hey TBW – talk to co-driver</button></div>
+      <div id="navStatus" class="small-text"></div>
+    </section>
+
+    <!-- WEATHER -->
+    <section class="card weather">
+      <h2>Weather &amp; Sea status</h2>
+      <div id="weatherBox" class="weather-box">Loading weather…</div>
+      <div id="seaBox" class="sea-box small-text"></div>
+    </section>
+
+    <!-- STREET VIEW -->
+    <section class="card streetview">
+      <h2>TBW Custom Street View</h2>
+      <div id="streetView" class="street"></div>
+      <div class="small-text">Tap to open full-screen Street View.</div>
+    </section>
+
+    <!-- PHOTOS -->
+    <section class="card photos">
+      <h2>Photos &amp; Attractions</h2>
+      <div id="photoGrid" class="photo-grid">Loading photos…</div>
+      <div id="poiBox" class="poi-list small-text"></div>
+    </section>
+
+    <!-- TRAFFIC -->
+    <section class="card traffic">
+      <h2>Live Traffic &amp; Incidents</h2>
+      <div id="trafficMap" class="map small-map"></div>
+      <div id="trafficInfo" class="small-text"></div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="card services">
+      <h2>Services &amp; Emergency</h2>
+      <div id="servicesBox" class="list small-text">
+        Loading shops, gas stations, hospitals…
+      </div>
+    </section>
+
+    <!-- MINI MAP -->
+    <section class="card overview-map">
+      <h2>Overview Map</h2>
+      <div id="miniMap" class="map small-map"></div>
+    </section>
+
+    <!-- AI CHAT -->
+    <section class="card full ai-chat">
+      <h2>TBW AI Assistant</h2>
+      <div id="messages" class="messages"></div>
+      <div class="chat-input-row">
+        <input id="assistantInput" class="input" placeholder="Ask anything…" />
+        <button id="assistantVoice" class="icon-btn">🎤</button>
+        <button id="sendBtn" class="btn primary">Send</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LEGAL MODAL -->
+  <div id="legalModal" class="legal-modal">
+    <div class="legal-modal-content">
+      <span id="legalClose" class="legal-close">&times;</span>
+      <h2>TBW AI PREMIUM – Legal Center</h2>
+      <p>Select document:</p>
+      <div class="legal-modal-links">
+        <a href="/legal/terms.html" target="_blank">Terms of Service</a>
+        <a href="/legal/privacy.html" target="_blank">Privacy Policy</a>
+        <a href="/legal/cookies.html" target="_blank">Cookie Policy</a>
+        <a href="/legal/disclaimer.html" target="_blank">Legal Disclaimer</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="legal-footer">
+    <div class="legal-links"><a href="#" id="openLegal">Legal Center</a></div>
+    <div class="legal-owner">
+      © 2025 <strong>TBW AI PREMIUM</strong> – All Rights Reserved.<br />
+      Founder &amp; Owner: <strong>Dražen Halar</strong> – <strong>ai.tbw.booking@gmail.com</strong>
+    </div>
+  </footer>
+
+  <script src="/navi.js" defer></script>
+  <script src="/app.js" defer></script>
 </body>
 </html>
