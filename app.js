@@ -1,4 +1,24 @@
-// ============================================
+/const API_BASE = "https://tbw-backend.vercel.app/api/tbw";
+
+// ---------- API helper ----------
+async function callApi(route, extraParams = {}) {
+    try {
+        const url = new URL(API_BASE);
+        url.searchParams.set("route", route);
+
+        Object.entries(extraParams).forEach(([k, v]) => {
+            url.searchParams.set(k, v);
+        });
+
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return await res.json();
+    } catch (err) {
+        console.error("API error:", route, err);
+        return { ok: false, error: err.message };
+    }
+}
+/ ============================================
 // TBW FRONTEND – APP LOGIC
 // ============================================
 
