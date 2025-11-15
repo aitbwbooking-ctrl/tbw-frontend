@@ -1,174 +1,126 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="utf-8" />
-  <title>TBW AI PREMIUM – Smart Travel, Navigation & Global Booking Assistant</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<title>TBW AI PREMIUM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#000a12" />
-  <link rel="icon" href="/assets/icons/icon_192.png" sizes="192x192" />
-  <link rel="apple-touch-icon" href="/assets/icons/icon_512.png" />
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/style.css">
 
-  <link rel="stylesheet" href="/style.css" />
+<script defer src="/navi.js"></script>
+<script defer src="/app.js"></script>
+
 </head>
 <body>
 
-  <!-- INTRO OVERLAY -->
-  <div id="introOverlay">
+<!-- INTRO SCREEN -->
+<div id="introOverlay">
     <canvas id="introCanvas"></canvas>
-    <button id="skipIntro">Preskoči intro</button>
-  </div>
+    <audio id="introAudio" src="/assets/intro.mp3"></audio>
+    <button id="skipIntro">Preskoči</button>
+</div>
 
-  <!-- GORE: LOGO + STATUS + JEZIK -->
-  <div id="topBar">
-    <div id="topLeft">
-      <img id="logo" src="/assets/TBW.png" alt="TBW Logo" />
-      <div>
-        <div style="font-weight:700;">TBW AI PREMIUM</div>
-        <div style="font-size:12px;color:#7aa9c7;">
-          Prometna upozorenja · Vrijeme · Stanje mora · Rezervacije · Alert!
+<!-- TOP FIXED BAR -->
+<header class="topBar">
+    <div class="topLeft">TBW AI PREMIUM</div>
+    <div class="topRight">
+        <button class="langSwitcher" id="langHR">HR</button>
+        <button class="langSwitcher" id="langEN">EN</button>
+        <button id="micBtn" class="mic">🎤</button>
+    </div>
+</header>
+
+<!-- ALERT TICKER -->
+<div id="ticker">
+    <span id="tickerContent">Učitavanje upozorenja...</span>
+</div>
+
+<!-- MAIN CONTENT WRAPPER -->
+<div class="container">
+
+    <!-- SEARCH BOX -->
+    <div class="searchBox">
+        <input id="globalSearch" placeholder="Pretraži (Split, apartmani...)" />
+        <button id="searchBtn" class="searchBtn">Traži</button>
+        <button id="aiVoice" class="micInput">🎤</button>
+    </div>
+
+    <!-- ROW 1 -->
+    <div class="cardsRow">
+
+        <!-- NAVIGATION -->
+        <div class="card" id="cardNav">
+            <h3>Navigacija</h3>
+            <div class="cardContent" id="navStatus">Nema aktivne rute</div>
+            <button id="navGo">Pokreni</button>
+            <button id="navHud">HUD</button>
+            <button id="navExit">Zaustavi</button>
         </div>
-      </div>
-    </div>
-    <div>
-      <div id="backendStatus" class="statusBox offline">Backend: provjeravam…</div>
-      <div id="geoStatus" class="statusBox">Lokacija: nepoznata</div>
-    </div>
-    <div id="langToggle">HR 🔁 EN</div>
-  </div>
 
-  <!-- TICKER -->
-  <div id="ticker">
-    <div id="tickerContent">Učitavam prometna upozorenja…</div>
-  </div>
+        <!-- REZERVACIJE -->
+        <div class="card" id="cardBooking">
+            <h3>Rezervacija smještaja</h3>
+            <div id="bookingInfo">
+                <p>Dodirni za prikaz Booking.com ponuda</p>
+            </div>
+            <button id="bookBtn">Otvori</button>
+        </div>
 
-  <!-- GLAVNA TRAŽILICA + MIC -->
-  <div id="searchContainer">
-    <input id="globalSearch" type="text" placeholder="Gdje idemo? (Split, Zadar…)" />
-    <button id="micBtn" title="Glasovno pretraživanje"></button>
-    <button id="searchBtn">Traži</button>
-  </div>
+        <!-- STREET VIEW -->
+        <div class="card" id="cardStreet">
+            <h3>Street View</h3>
+            <div id="streetPreview">
+                <p>Dodirni za prikaz trenutne destinacije</p>
+            </div>
+        </div>
 
-  <!-- VOICE BAR (slušanje) -->
-  <div id="voiceBar" class="hidden">🎤 Slušam vas… Recite npr. “Želim do Splita najbržim putem”.</div>
-
-  <!-- GRID 3×3 WIDGETI -->
-  <div id="grid">
-    <!-- 1. Red -->
-    <div class="card" id="cardNav">
-      <div class="cardTitle">Navigacija</div>
-      <div class="cardValue" id="navSummary">Nema aktivne rute</div>
-      <div class="cardSub">Dodirni za otvaranje navigacije preko cijelog ekrana</div>
     </div>
 
-    <div class="card" id="cardBooking">
-      <div class="cardTitle">Rezervacija smještaja</div>
-      <div class="cardValue" id="bookingCity">Split apartmani</div>
-      <div class="cardSub">Dodirni za otvaranje Booking.com pretrage</div>
+    <!-- ROW 2 -->
+    <div class="cardsRow">
+
+        <!-- VRIJEME -->
+        <div class="card" id="weatherBox">
+            <h3>Vrijeme</h3>
+            <div class="weatherContent">Učitavanje...</div>
+        </div>
+
+        <!-- PROMET UŽIVO -->
+        <div class="card" id="trafficInfo">
+            <h3>Promet uživo</h3>
+            <div>Učitavanje...</div>
+        </div>
+
+        <!-- STANJE MORA -->
+        <div class="card" id="seaBox">
+            <h3>Stanje mora</h3>
+            <div>Učitavanje...</div>
+        </div>
+
     </div>
 
-    <div class="card" id="cardStreet">
-      <div class="cardTitle">Street View</div>
-      <div class="cardSub">Dodirni za Street View prikaz trenutne destinacije</div>
-      <canvas id="streetMini" class="weatherCanvas"></canvas>
+    <!-- ROW 3 -->
+    <div class="cardsRow">
+
+        <div class="card" id="servicesBox">
+            <h3>Servisi</h3>
+            <div>Učitavanje...</div>
+        </div>
+
+        <div class="card" id="transitBox">
+            <h3>Javni prijevoz</h3>
+            <div>Učitavanje...</div>
+        </div>
+
+        <div class="card" id="airportBox">
+            <h3>Aerodromi & RDS alarmi</h3>
+            <div>Učitavanje...</div>
+        </div>
+
     </div>
 
-    <!-- 2. Red -->
-    <div class="card" id="cardWeather">
-      <div class="cardTitle">Vrijeme</div>
-      <div class="cardValue" id="weatherTemp">--°C</div>
-      <div class="cardSub" id="weatherDesc">Učitavanje…</div>
-      <canvas id="weatherCanvas" class="weatherCanvas"></canvas>
-    </div>
+</div>
 
-    <div class="card" id="cardTraffic">
-      <div class="cardTitle">Promet uživo</div>
-      <div class="cardValue" id="trafficStatus">Nepoznato</div>
-      <div class="cardSub" id="trafficDesc">Učitavanje…</div>
-    </div>
-
-    <div class="card" id="cardSea">
-      <div class="cardTitle">Stanje mora &amp; trajekti</div>
-      <div class="cardValue" id="seaTemp">--°C</div>
-      <div class="cardSub" id="seaDesc">Učitavanje…</div>
-    </div>
-
-    <!-- 3. Red -->
-    <div class="card" id="cardServices">
-      <div class="cardTitle">Servisi i trgovine</div>
-      <div class="cardSub" id="servicesList">Učitavanje…</div>
-    </div>
-
-    <div class="card" id="cardTransit">
-      <div class="cardTitle">Javni prijevoz</div>
-      <div class="cardSub" id="transitInfo">Učitavanje…</div>
-    </div>
-
-    <div class="card" id="cardAirport">
-      <div class="cardTitle">Aerodromi &amp; RDS alarmi</div>
-      <div class="cardSub" id="airportInfo">Učitavanje…</div>
-      <div class="cardSub" id="rdsInfo" style="margin-top:6px;"></div>
-    </div>
-  </div>
-
-  <!-- COOKIE BANNER -->
-  <div id="cookieBanner">
-    <div class="cookie-text">
-      Ova aplikacija koristi kolačiće za sigurnost, analitiku i AI funkcije.
-    </div>
-    <div>
-      <button id="cookieAccept">Prihvati</button>
-      <button id="cookieReject">Odbij</button>
-    </div>
-  </div>
-
-  <!-- MODAL: NAVIGACIJA FULLSCREEN -->
-  <div id="navModal" class="modalFull">
-    <div class="modalContent">
-      <h2>Navigacija – TBW NAVI PRO</h2>
-      <p>Recite ili upišite rutu, npr. “Karlovac do Split”.</p>
-
-      <label>Od:</label>
-      <input id="navFrom" class="navInput" placeholder="npr. Karlovac" />
-
-      <label>Do:</label>
-      <input id="navTo" class="navInput" placeholder="npr. Split" />
-
-      <div style="margin-top:10px; display:flex; gap:8px;">
-        <button id="navGo">Kreni</button>
-        <button id="navVoice">🎤 Glasovno</button>
-      </div>
-
-      <div id="navResult" style="margin-top:14px; font-size:14px;"></div>
-    </div>
-    <div class="closeBtn" id="navClose">Zatvori navigaciju</div>
-  </div>
-
-  <!-- MODAL: STREET VIEW (za budućnost, sada placeholder) -->
-  <div id="streetModal" class="modalFull">
-    <div class="modalContent">
-      <h2>TBW Street View (demo)</h2>
-      <p>Ovdje možeš kasnije ubaciti pravi Google Street View iframe.</p>
-      <div style="margin-top:15px; background:#000; border-radius:10px; height:60vh;"></div>
-    </div>
-    <div class="closeBtn" id="streetClose">Natrag</div>
-  </div>
-
-  <!-- MODAL: AI CHAT (za kasnije širenje) -->
-  <div id="chatModal" class="modalFull" style="display:none;">
-    <div class="modalContent">
-      <h2>TBW AI suvozač</h2>
-      <div id="messages"></div>
-      <div style="display:flex; gap:6px; margin-top:10px;">
-        <input id="assistantInput" class="navInput" placeholder="Postavi pitanje…" />
-        <button id="assistantVoice">🎤</button>
-        <button id="assistantSend">Pošalji</button>
-      </div>
-    </div>
-    <div class="closeBtn" id="chatClose">Zatvori</div>
-  </div>
-
-  <script src="/app.js"></script>
 </body>
 </html>
