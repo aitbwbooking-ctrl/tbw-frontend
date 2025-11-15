@@ -1,134 +1,223 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-    margin: 0;
-    background: #000a0f;
-    color: #dff;
-    font-family: Arial, sans-serif;
-    overflow-x: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #001b30 0, #00060c 50%, #000000 100%);
+  color: #e0f7ff;
+  min-height: 100vh;
 }
 
 /* INTRO */
+
 #introOverlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: black;
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity .6s;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 9999;
 }
-#introCanvas { width: 100%; height: 100%; display: block; }
+
+#introCanvas {
+  position: absolute;
+  inset: 0;
+}
+
 #skipIntro {
-    position: absolute; bottom: 30px;
-    padding: 8px 18px;
-    background: #0af; color: #fff;
-    border: none; border-radius: 6px;
+  position: relative;
+  z-index: 1;
+  border-radius: 999px;
+  border: 1px solid #66d9ff;
+  background: transparent;
+  color: #e0f7ff;
+  padding: 6px 14px;
+  cursor: pointer;
 }
 
 /* TOP BAR */
+
 .topBar {
-    position: fixed;
-    top:0; left:0;
-    width: 100%;
-    height: 60px;
-    background: rgba(0,30,40,0.85);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 15px;
-    z-index: 500;
-    backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 20, 35, 0.96);
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-.topLeft {
-    font-size: 20px;
-    font-weight: bold;
-    color: #96e8ff;
+
+.topLeft .appTitle {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
-.langSwitcher, .mic {
-    background: #033;
-    color: #8df;
-    border: 1px solid #0aa;
-    border-radius: 6px;
-    padding: 7px 12px;
-    margin-left: 5px;
+
+.topLeft .appSub {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.topRight {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.langSwitcher {
+  border-radius: 999px;
+  background: #002f3f;
+  color: #e0f7ff;
+  border: 1px solid #00e5ff;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.langSwitcher.active {
+  background: #00e5ff;
+  color: #00131f;
+}
+
+.mic {
+  border-radius: 999px;
+  border: none;
+  background: #006064;
+  color: white;
+  padding: 6px 10px;
+  cursor: pointer;
 }
 
 /* TICKER */
+
 #ticker {
-    position: fixed;
-    top: 60px;
-    width: 100%;
-    height: 35px;
-    background: #002028;
-    overflow: hidden;
-    display:flex;
-    align-items:center;
-}
-#tickerContent {
-    white-space: nowrap;
-    animation: tickerMove 14s linear infinite;
-    padding-left:100%;
-    color: #9df;
-}
-@keyframes tickerMove {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+  width: 100%;
+  overflow: hidden;
+  background: rgba(0, 15, 25, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 4px 10px;
+  font-size: 12px;
 }
 
-/* WRAPPER */
+#tickerContent {
+  display: inline-block;
+  white-space: nowrap;
+  animation: tickerMove 22s linear infinite;
+}
+
+@keyframes tickerMove {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-120%); }
+}
+
+/* MAIN LAYOUT */
+
 .container {
-    padding-top: 115px;
-    padding-bottom: 40px;
+  max-width: 1100px;
+  margin: 16px auto 40px;
+  padding: 0 12px 40px;
 }
 
 /* SEARCH */
+
 .searchBox {
-    width: 95%;
-    margin: 0 auto 20px auto;
-    display:flex;
-    gap: 5px;
-}
-.searchBox input {
-    flex:1;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #055;
-    background: #001c22;
-    color: #cff;
-}
-.searchBtn {
-    padding: 12px 18px;
-    background: #066;
-    border:none;
-    color:white;
-    border-radius:8px;
-}
-.micInput {
-    padding: 12px 14px;
-    background: #044;
-    border: 1px solid #0aa;
-    border-radius: 8px;
-    color: #8df;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-/* CARDS */
+#globalSearch {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0, 0, 0, 0.6);
+  color: #e0f7ff;
+  padding: 7px 12px;
+  font-size: 14px;
+}
+
+.searchBtn {
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #00bcd4, #00e5ff);
+  color: #00131f;
+  padding: 7px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.micInput {
+  border-radius: 999px;
+  border: none;
+  background: #1a237e;
+  color: #fff;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+/* CARDS GRID */
+
 .cardsRow {
-    width: 95%;
-    margin: 0 auto 15px auto;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
 }
+
 .card {
-    flex: 1;
-    background: #001821;
-    border: 1px solid #022;
-    padding: 15px;
-    border-radius: 12px;
-    min-height: 150px;
+  background: rgba(0, 11, 18, 0.9);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  min-height: 100px;
 }
+
 .card h3 {
-    margin-top: 0;
-    color: #8df;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.card button {
+  margin-top: 6px;
+  margin-right: 4px;
+  border-radius: 999px;
+  border: none;
+  background: #004d61;
+  color: #e0f7ff;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cardContent {
+  font-size: 13px;
+}
+
+/* WEATHER SPECIAL LOOK */
+
+#weatherBox .weatherContent {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .cardsRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .cardsRow {
+    grid-template-columns: 1fr;
+  }
 }
