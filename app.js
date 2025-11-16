@@ -1,178 +1,181 @@
-// =======================
-// TBW AI PREMIUM FRONTEND
-// =======================
+// FRONTEND TBW AI – FIXED VERSION
 
 const API_BASE = "https://tbw-backend.vercel.app/api/tbw";
 
 let currentLang = "hr";
 let currentCity = "Split";
 
-// ----- I18N -----
+// ------ i18n -----
 
 const TEXT = {
   hr: {
-    searchPlaceholder: "Pretraži (Split, apartmani, hotel…)",
+    searchPlaceholder: "Pretraži (Split…)",
     searchBtn: "Traži",
-    nav: "Navigacija",
-    booking: "Rezervacija smještaja",
-    street: "Street View",
     weather: "Vrijeme",
     traffic: "Promet uživo",
-    sea: "Stanje mora & trajekti",
-    services: "Servisi & trgovine",
+    sea: "Stanje mora",
+    services: "Servisi",
     transit: "Javni prijevoz",
-    airport: "Aerodromi & RDS alarmi",
-    heroLine:
-      "Prometna upozorenja · Vrijeme · Stanje mora · Nesreće · Rezervacije · Alert!",
-    noRoute: "Nema aktivne rute.",
-    bookingHint: "Dodirni za prikaz Booking.com ponude.",
-    streetHint: "Klikni za prikaz trenutne destinacije.",
-    loading: "Učitavanje…",
-    offline: "Backend nedostupan",
+    airport: "Letovi",
+    heroLine: "Upozorenja · Vrijeme · Promet · More · Letovi",
+    loading: "Učitavanje...",
     online: "Backend: online",
+    offline: "Backend: offline",
   },
   en: {
-    searchPlaceholder: "Search (Split, apartments, hotel…)",
+    searchPlaceholder: "Search (Split…)",
     searchBtn: "Search",
-    nav: "Navigation",
-    booking: "Accommodation booking",
-    street: "Street View",
     weather: "Weather",
     traffic: "Live traffic",
-    sea: "Sea & ferries",
-    services: "Services & shops",
-    transit: "Public transport",
-    airport: "Airports & RDS alerts",
-    heroLine:
-      "Traffic alerts · Weather · Sea conditions · Incidents · Reservations · Alerts!",
-    noRoute: "No active route.",
-    bookingHint: "Tap to open Booking.com offers.",
-    streetHint: "Tap to view current destination.",
-    loading: "Loading…",
+    sea: "Sea",
+    services: "Services",
+    transit: "Transit",
+    airport: "Airport",
+    heroLine: "Alerts · Weather · Traffic · Sea · Flights",
+    loading: "Loading...",
+    online: "Backend online",
     offline: "Backend offline",
-    online: "Backend: online",
-  },
+  }
 };
 
-function t(key) {
-  return (TEXT[currentLang] && TEXT[currentLang][key]) || key;
-}
+function t(k){return TEXT[currentLang][k]}
 
-// ----- BASIC HELPERS -----
+// helper
+function qs(id){return document.getElementById(id)}
 
-async function callApi(route, extra = {}) {
-  const url = new URL(API_BASE);
-  url.searchParams.set("route", route);
-  if (!extra.city && route !== "alerts") {
-    url.searchParams.set("city", currentCity);
-  }
-  Object.entries(extra).forEach(([k, v]) => url.searchParams.set(k, v));
-
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+// API fetch
+async function callApi(route) {
+  const url = `${API_BASE}?route=${route}&city=${currentCity}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(res.status);
   return res.json();
 }
 
-function qs(id) {
-  return document.getElementById(id);
+// ----- LOADERS -----
+
+async function checkBackend(){
+  const el = qs("backendStatus");
+  try {
+    await callApi("weather");
+    el.textContent = t("online");
+    el.className = "ok";
+  } catch {
+    el.textContent = t("offline");
+    el.className = "err";
+  }
 }
 
-// ----- INTRO ANIMATION -----
+async function loadWeather(){
+  const box = qs("weatherContent");
+  box.textContent = t("loading");
 
-function runIntro() {
-  const overlay = qs("introOverlay");
-  const canvas = qs("introCanvas");
-  const audio = qs("introAudio");
-  if (!overlay || !canvas) return;
+  try{
+    const d = await callApi("weather");
+    box.innerHTML = `
+      <b>${d.city}</b><br>
+      <span style="font-size:22px">${d.temperature}°C</span><br>
+      ${d.condition}
+    `;
+    runWeatherAnim(d.condition);
+  }catch{ box.textContent="Greška" }
+}
 
+async function loadTraffic(){
+  const box = qs("trafficContent");
+  box.textContent = t("loading");
+  try {
+    const d = await callApi("traffic");
+    box.innerHTML = `
+      Status: <b>${d.traffic_status}</b><br>
+      Brzina: ${d.speed}<br>
+      Kašnjenje: ${d.delay}
+    `;
+  } catch { box.textContent = "Greška"; }
+}
+
+async function loadSea(){
+  const box = qs("seaContent");
+  box.textContent = t("loading");
+  try {
+    const d = await callApi("sea");
+    box.innerHTML = `
+      Temperatura: ${d.temperature}°C<br>
+      ${d.note}
+    `;
+  } catch { box.textContent = "Greška"; }
+}
+
+async function loadServices(){
+  const box = qs("servicesContent");
+  box.textContent = t("loading");
+  try {
+    const d = await callApi("services");
+    box.innerHTML = d.items.map(s => `${s.name} – ${s.status}`).join("<br>");
+  } catch { box.textContent = "Greška"; }
+}
+
+async function loadTransit(){
+  const box = qs("transitContent");
+  box.textContent = t("loading");
+  try {
+    const d = await callApi("transit");
+    box.innerHTML = d.buses
+      .map(b => `${b.line}: ${b.from} → ${b.to} · ${b.next}`)
+      .join("<br>");
+  } catch { box.textContent = "Greška"; }
+}
+
+async function loadAirport(){
+  const box = qs("airportContent");
+  box.textContent = t("loading");
+  try {
+    const d = await callApi("airport");
+    box.innerHTML = d.flights
+      .map(f => `${f.flight_no}: ${f.from} → ${f.to} · ${f.eta} (${f.status})`)
+      .join("<br>");
+  } catch { box.textContent = "Greška"; }
+}
+
+async function loadAlerts(){
+  const box = qs("tickerContent");
+  try{
+    const d = await callApi("alerts");
+    box.textContent = d.alerts.map(a=>a.message).join(" · ");
+  }catch{
+    box.textContent = "Upozorenja nedostupna";
+  }
+}
+
+// WEATHER ANIM
+function runWeatherAnim(condition){
+  const canvas = qs("weatherAnim");
   const ctx = canvas.getContext("2d");
-  let w, h;
 
-  function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener("resize", resize);
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
-  const stars = Array.from({ length: 160 }, () => ({
-    x: Math.random() * w,
-    y: Math.random() * h,
-    z: Math.random() * 1.3 + 0.3,
-  }));
+  let dropY = 0;
 
-  let comet = { x: -80, y: h * 0.35, vx: 7, vy: 1.2 };
-  let start = null;
+  function frame(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "#90caf9";
 
-  function frame(ts) {
-    if (!start) start = ts;
-    const dt = ts - start;
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, w, h);
-
-    for (const s of stars) {
-      s.x -= s.z * 0.8;
-      if (s.x < 0) {
-        s.x = w;
-        s.y = Math.random() * h;
-      }
-      ctx.fillStyle = "white";
-      ctx.fillRect(s.x, s.y, 1.6 * s.z, 1.6 * s.z);
+    if(/rain/i.test(condition)){
+      ctx.fillRect(50, dropY, 2, 10);
+      dropY += 4;
+      if(dropY > canvas.height) dropY = -20;
     }
 
-    comet.x += comet.vx;
-    comet.y += comet.vy;
-    ctx.beginPath();
-    ctx.fillStyle = "#ffe082";
-    ctx.arc(comet.x, comet.y, 5, 0, Math.PI * 2);
-    ctx.fill();
-
-    const grad = ctx.createLinearGradient(
-      comet.x,
-      comet.y,
-      comet.x - 120,
-      comet.y - 40
-    );
-    grad.addColorStop(0, "rgba(255,255,255,0.9)");
-    grad.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(comet.x - 2, comet.y);
-    ctx.lineTo(comet.x - 120, comet.y - 40);
-    ctx.stroke();
-
-    if (dt < 4500) {
-      requestAnimationFrame(frame);
-    } else {
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.arc(comet.x, comet.y, 220, 0, Math.PI * 2);
-      ctx.fill();
-      setTimeout(() => {
-        overlay.style.opacity = "0";
-        setTimeout(() => (overlay.style.display = "none"), 600);
-      }, 200);
-    }
+    requestAnimationFrame(frame);
   }
 
-  if (audio) {
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
-  }
-  requestAnimationFrame(frame);
+  frame();
 }
 
-// ----- LANGUAGE -----
-
-function applyLangTexts() {
+// LANGUAGE
+function applyLang(){
   qs("globalSearch").placeholder = t("searchPlaceholder");
   qs("searchBtn").textContent = t("searchBtn");
-
-  qs("navTitle").textContent = t("nav");
-  qs("bookingTitle").textContent = t("booking");
-  qs("streetTitle").textContent = t("street");
   qs("weatherTitle").textContent = t("weather");
   qs("trafficTitle").textContent = t("traffic");
   qs("seaTitle").textContent = t("sea");
@@ -180,210 +183,26 @@ function applyLangTexts() {
   qs("transitTitle").textContent = t("transit");
   qs("airportTitle").textContent = t("airport");
   qs("heroLine").textContent = t("heroLine");
-
-  if (!qs("navContent").dataset.locked) qs("navContent").textContent = t("noRoute");
-  if (!qs("bookingContent").dataset.locked) qs("bookingContent").textContent = t("bookingHint");
-  if (!qs("streetContent").dataset.locked) qs("streetContent").textContent = t("streetHint");
 }
 
-function setLang(lang) {
-  currentLang = lang;
-  qs("langHR").classList.toggle("active", lang === "hr");
-  qs("langEN").classList.toggle("active", lang === "en");
-  applyLangTexts();
-  updateSpeechLang();
-}
+// SEARCH
+function initSearch(){
+  const box = qs("globalSearch");
+  const btn = qs("searchBtn");
 
-// ----- STATUS / GEO / ALERTS -----
-
-async function checkBackend() {
-  const el = qs("backendStatus");
-  try {
-    await callApi("weather", { city: currentCity });
-    el.textContent = t("online");
-    el.classList.add("ok");
-    el.classList.remove("err");
-  } catch (e) {
-    console.error(e);
-    el.textContent = t("offline");
-    el.classList.add("err");
-    el.classList.remove("ok");
+  function go(){
+    if(!box.value.trim()) return;
+    currentCity = box.value.trim();
+    loadAll();
   }
+
+  btn.onclick = go;
+  box.onkeydown = e => { if(e.key==="Enter") go() }
 }
 
-function initGeo() {
-  const el = qs("geoStatus");
-  if (!navigator.geolocation) {
-    el.textContent = "Lokacija: nije podržano";
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      el.textContent =
-        `Lokacija: ${pos.coords.latitude.toFixed(3)}, ${pos.coords.longitude.toFixed(3)}`;
-    },
-    () => {
-      el.textContent = "Lokacija: onemogućena";
-    }
-  );
-}
-
-async function loadAlerts() {
-  try {
-    const data = await callApi("alerts", { city: currentCity });
-    const msgs = (data.alerts || []).map((a) => a.message);
-    qs("tickerContent").textContent =
-      msgs.length > 0 ? msgs.join(" · ") : "Nema aktivnih upozorenja. Sretan put!";
-  } catch (e) {
-    console.error(e);
-    qs("tickerContent").textContent = "Upozorenja nedostupna.";
-  }
-}
-
-// ----- LOADERS -----
-
-async function loadWeather() {
-  const box = qs("weatherContent");
-  box.textContent = t("loading");
-  try {
-    const data = await callApi("weather");
-    const c = data.temperature ?? data.temp;
-    const cond = data.condition || data.conditions || "-";
-    box.innerHTML = `
-      <div><strong>${data.city || currentCity}</strong></div>
-      <div style="font-size:20px;margin:4px 0;">${Math.round(c)}°C</div>
-      <div>${cond}</div>
-    `;
-    startWeatherAnim(cond);
-  } catch (e) {
-    console.error(e);
-    box.textContent = "Greška kod vremena.";
-  }
-}
-
-async function loadSea() {
-  const box = qs("seaContent");
-  box.textContent = t("loading");
-  try {
-    const data = await callApi("sea");
-    box.innerHTML = `
-      <div><strong>${data.city || currentCity}</strong></div>
-      <div style="margin:4px 0;">More: ${data.temperature ?? "-"}°C</div>
-      <div>${data.note || "UV umjeren."}</div>
-    `;
-  } catch (e) {
-    console.error(e);
-    box.textContent = "Greška kod podataka o moru.";
-  }
-}
-
-async function loadTraffic() {
-  const box = qs("trafficContent");
-  box.textContent = t("loading");
-  try {
-    const data = await callApi("traffic");
-    box.innerHTML = `
-      <div>Status: <strong>${
-        data.status || data.traffic_status || "normal"
-      }</strong></div>
-      <div>Brzina: ${data.speed || "—"} km/h</div>
-      <div>Kašnjenje: ${data.delay_min || 0} min</div>
-      <div style="margin-top:4px;">${data.note || ""}</div>
-    `;
-  } catch (e) {
-    console.error(e);
-    box.textContent = "Greška kod prometa.";
-  }
-}
-
-async function loadServices() {
-  const box = qs("servicesContent");
-  box.textContent = t("loading");
-  try {
-    const data = await callApi("services");
-    const items = data.items || data.services || [];
-    if (!items.length) {
-      box.textContent = "Nema podataka o servisima.";
-      return;
-    }
-    box.innerHTML = items
-      .slice(0, 4)
-      .map(
-        (s) =>
-          `${s.name} – ${s.status || "otvoreno"}${
-            s.closes ? ` (zatvara ${s.closes})` : ""
-          }`
-      )
-      .join("<br>");
-  } catch (e) {
-    console.error(e);
-    box.textContent = "Greška kod servisa.";
-  }
-}
-
-async function loadTransit() {
-  const box = qs("transitContent");
-  box.textContent = t("loading");
-  try {
-    const data = await callApi("transit");
-    const items = data.items || data.buses || [];
-    if (!items.length) {
-      box.textContent = "Nema podataka o javnom prijevozu.";
-      return;
-    }
-    box.innerHTML = items
-      .slice(0, 4)
-      .map(
-        (t) =>
-          `${t.type || "Bus"} ${t.line}: ${t.from} → ${t.to} · ${t.next || ""}`
-      )
-      .join("<br>");
-  } catch (e) {
-    console.error(e);
-    box.textContent = "Greška kod javnog prijevoza.";
-  }
-}
-
-async function loadAirport() {
-  const box = qs("airportContent");
-  box.textContent = t("loading");
-  try {
-    const data = await callApi("airport");
-    const items = data.items || data.flights || [];
-    if (!items.length) {
-      box.textContent = "Nema podataka o letovima.";
-      return;
-    }
-    box.innerHTML = items
-      .slice(0, 3)
-      .map(
-        (f) =>
-          `${f.flight || f.flight_no || ""}: ${f.from} → ${f.to} · ETA ${
-            f.eta || f.arrival || ""
-          } (${f.status || ""})`
-      )
-      .join("<br>");
-  } catch (e) {
-    console.error(e);
-    box.textContent = "Greška kod aerodroma.";
-  }
-}
-
-function initStaticCards() {
-  const navContent = qs("navContent");
-  navContent.textContent = t("noRoute");
-
-  const bookingContent = qs("bookingContent");
-  bookingContent.textContent = t("bookingHint");
-  bookingContent.dataset.locked = "1";
-
-  const streetContent = qs("streetContent");
-  streetContent.textContent = t("streetHint");
-  streetContent.dataset.locked = "1";
-}
-
-async function loadAll() {
-  await checkBackend();
+// LOAD ALL
+function loadAll(){
+  checkBackend();
   loadAlerts();
   loadWeather();
   loadTraffic();
@@ -393,215 +212,12 @@ async function loadAll() {
   loadAirport();
 }
 
-// ----- WEATHER ANIMATION -----
-
-let weatherAnimFrame = null;
-
-function startWeatherAnim(condition) {
-  const canvas = qs("weatherAnim");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const isSnow = /snow/i.test(condition || "");
-  const isRain = /rain/i.test(condition || "");
-  const isClear = /clear|sun/i.test(condition || "");
-
-  let w, h;
-  function resize() {
-    w = canvas.width = canvas.clientWidth;
-    h = canvas.height = canvas.clientHeight;
-  }
-  resize();
-
-  const particles = Array.from({ length: 80 }, () => ({
-    x: Math.random() * w,
-    y: Math.random() * h,
-    v: isSnow ? 0.3 + Math.random() * 0.5 : 1 + Math.random() * 1.5,
-  }));
-
-  function loop() {
-    ctx.clearRect(0, 0, w, h);
-
-    if (isSnow || isRain) {
-      ctx.strokeStyle = isSnow ? "#ffffff" : "#90caf9";
-      ctx.lineWidth = isSnow ? 1.2 : 1.4;
-      for (const p of particles) {
-        p.y += p.v;
-        if (p.y > h) {
-          p.y = -10;
-          p.x = Math.random() * w;
-        }
-        ctx.beginPath();
-        if (isSnow) {
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x + 1, p.y + 3);
-        } else {
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x + 2, p.y + 8);
-        }
-        ctx.stroke();
-      }
-    } else if (isClear) {
-      ctx.fillStyle = "rgba(255, 241, 118, 0.6)";
-      ctx.beginPath();
-      ctx.arc(w - 35, 35, 18, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    weatherAnimFrame = requestAnimationFrame(loop);
-  }
-
-  if (weatherAnimFrame) cancelAnimationFrame(weatherAnimFrame);
-  loop();
-}
-
-// ----- MODAL -----
-
-function initModal() {
-  const modal = qs("cardModal");
-  const modalTitle = qs("modalTitle");
-  const modalBody = qs("modalBody");
-  const closeBtn = qs("modalClose");
-
-  function openFromCard(cardId, titleId, contentId) {
-    const title = qs(titleId).textContent;
-    const content = qs(contentId).innerHTML;
-    modalTitle.textContent = title;
-    modalBody.innerHTML = content;
-    modal.classList.remove("hidden");
-  }
-
-  document.querySelectorAll(".card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const id = card.id;
-      if (id === "cardNav") openFromCard(id, "navTitle", "navContent");
-      else if (id === "cardBooking") {
-        const q = encodeURIComponent(currentCity);
-        window.open(
-          `https://www.booking.com/searchresults.html?ss=${q}`,
-          "_blank"
-        );
-      } else if (id === "cardStreet")
-        openFromCard(id, "streetTitle", "streetContent");
-      else if (id === "cardWeather")
-        openFromCard(id, "weatherTitle", "weatherContent");
-      else if (id === "cardTraffic")
-        openFromCard(id, "trafficTitle", "trafficContent");
-      else if (id === "cardSea")
-        openFromCard(id, "seaTitle", "seaContent");
-      else if (id === "cardServices")
-        openFromCard(id, "servicesTitle", "servicesContent");
-      else if (id === "cardTransit")
-        openFromCard(id, "transitTitle", "transitContent");
-      else if (id === "cardAirport")
-        openFromCard(id, "airportTitle", "airportContent");
-    });
-  });
-
-  closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.classList.add("hidden");
-  });
-}
-
-// ----- VOICE -----
-
-let recognition = null;
-
-function initSpeech() {
-  const SR =
-    window.SpeechRecognition || window.webkitSpeechRecognition || null;
-  if (!SR) return;
-  recognition = new SR();
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  updateSpeechLang();
-}
-
-function updateSpeechLang() {
-  if (!recognition) return;
-  recognition.lang = currentLang === "hr" ? "hr-HR" : "en-US";
-}
-
-function startMicFor(inputEl) {
-  if (!recognition) {
-    alert("Ovaj preglednik ne podržava prepoznavanje govora.");
-    return;
-  }
-  try {
-    recognition.onresult = (e) => {
-      const text = e.results[0][0].transcript;
-      inputEl.value = text;
-    };
-    recognition.start();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-function speak(text) {
-  if (!("speechSynthesis" in window)) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = currentLang === "hr" ? "hr-HR" : "en-US";
-  window.speechSynthesis.speak(u);
-}
-
-function initVoiceButtons() {
-  const searchVoiceBtn = qs("searchVoiceBtn");
-  const searchInput = qs("globalSearch");
-
-  if (searchVoiceBtn) {
-    searchVoiceBtn.onclick = () => startMicFor(searchInput);
-  }
-}
-
-// ----- SEARCH -----
-
-function initSearch() {
-  const searchInput = qs("globalSearch");
-  const searchBtn = qs("searchBtn");
-
-  function triggerSearch() {
-    const val = searchInput.value.trim();
-    if (!val) return;
-    currentCity = val;
-    loadAll();
-  }
-
-  searchBtn.addEventListener("click", triggerSearch);
-  searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") triggerSearch();
-  });
-}
-
-// ----- INIT -----
-
+// INIT
 document.addEventListener("DOMContentLoaded", () => {
-  const introSeen = localStorage.getItem("tbw_intro_seen");
-  if (!introSeen) {
-    localStorage.setItem("tbw_intro_seen", "1");
-    runIntro();
-  } else {
-    const overlay = qs("introOverlay");
-    if (overlay) overlay.style.display = "none";
-  }
-  const skip = qs("skipIntro");
-  if (skip) {
-    skip.onclick = () => {
-      const overlay = qs("introOverlay");
-      if (overlay) overlay.style.display = "none";
-      const audio = qs("introAudio");
-      if (audio) audio.pause();
-    };
-  }
-
-  qs("langHR").onclick = () => setLang("hr");
-  qs("langEN").onclick = () => setLang("en");
-  applyLangTexts();
-  initStaticCards();
-  initGeo();
+  applyLang();
   initSearch();
-  initSpeech();
-  initVoiceButtons();
-  initModal();
   loadAll();
+
+  qs("langHR").onclick = () => { currentLang="hr"; applyLang(); loadAll(); }
+  qs("langEN").onclick = () => { currentLang="en"; applyLang(); loadAll(); }
 });
