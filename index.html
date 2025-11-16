@@ -8,17 +8,40 @@
 </head>
 <body>
 
-    <!-- LANGUAGE SWITCHER -->
-    <div id="langSwitcher"></div>
+    <div id="app">
+        <h1>TBW AI PREMIUM</h1>
+        <p id="backendStatus">Provjera...</p>
 
-    <!-- MAIN WRAPPER -->
-    <div id="app"></div>
+        <div id="searchBar">
+            <input id="search" type="text" placeholder="Upiši grad (npr. Split)">
+            <button id="searchBtn">Traži</button>
+        </div>
 
-    <!-- MODAL -->
-    <div id="cardModal" class="hidden"></div>
+        <div id="cards">
 
-    <!-- JS -->
+            <div class="card">
+                <h3>Vrijeme</h3>
+                <div id="weather"></div>
+            </div>
+
+            <div class="card">
+                <h3>Promet</h3>
+                <div id="traffic"></div>
+            </div>
+
+            <div class="card">
+                <h3>More</h3>
+                <div id="sea"></div>
+            </div>
+
+            <div class="card">
+                <h3>Letovi</h3>
+                <div id="flights"></div>
+            </div>
+
+        </div>
+    </div>
+
     <script src="app.js"></script>
-
 </body>
 </html>
