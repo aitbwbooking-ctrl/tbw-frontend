@@ -1,91 +1,50 @@
 body {
     margin: 0;
-    background: #07212f;
+    background: #062138;
     color: white;
     font-family: Arial, sans-serif;
 }
 
-#langSwitcher {
-    padding: 10px;
-    text-align: right;
-    font-size: 14px;
-}
-
-#langSwitcher span {
-    cursor: pointer;
-}
-
-#langSwitcher .active {
-    font-weight: bold;
-    text-decoration: underline;
-}
-
 #app {
-    padding: 20px;
+    width: 90%;
     max-width: 900px;
     margin: auto;
+    padding-top: 20px;
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 10px;
 }
 
 #searchBar {
     display: flex;
-    gap: 5px;
-    margin: 10px 0 20px 0;
+    gap: 10px;
+    margin: 20px 0;
 }
 
-input {
-    width: 100%;
+#searchBar input {
+    flex: 1;
     padding: 10px;
-    border-radius: 8px;
+    border-radius: 5px;
     border: none;
 }
 
-button {
-    padding: 10px 14px;
-    border-radius: 8px;
+#searchBar button {
+    padding: 10px 20px;
+    background: #00aaff;
     border: none;
-    background: #0f6fc0;
-    color: white;
+    border-radius: 5px;
     cursor: pointer;
-}
-
-#backendStatus.ok { color: #4caf50; }
-#backendStatus.err { color: #ff5252; }
-
-#alertTicker {
-    background: #03344f;
-    padding: 8px;
-    border-radius: 8px;
-    margin-bottom: 20px;
 }
 
 #cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
 .card {
-    background: #0b354a;
+    background: #083359;
     padding: 15px;
     border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.card:hover {
-    background: #0e4862;
-}
-
-.cardContent {
-    margin-top: 10px;
-}
-
-#weatherAnim {
-    width: 100%;
-    height: 80px;
 }
