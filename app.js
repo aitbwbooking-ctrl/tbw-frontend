@@ -1,60 +1,81 @@
-// ⬅️ OVDJE STAVI SVOJ BACKEND LINK
-const BACKEND_URL = "https://tbw-backend.vercel.app";
+const API = "https://tbw-backend.vercel.app";
 
-document.addEventListener("DOMContentLoaded", () => {
-    const app = document.getElementById("app");
+document.getElementById("backendStatus").innerText = "Backend: provjera...";
 
-    // ---- KARTICE ----
-    const cards = [
-        { id: "weather", name: "Vrijeme", endpoint: "/tbw?route=weather&city=Split" },
-        { id: "traffic", name: "Promet uživo", endpoint: "/tbw?route=traffic&city=Split" },
-        { id: "sea", name: "Stanje mora", endpoint: "/tbw?route=sea&city=Split" },
-        { id: "shops", name: "Servisi", endpoint: "/tbw?route=services&city=Split" },
-        { id: "bus", name: "Javni prijevoz", endpoint: "/tbw?route=transit&city=Split" },
-        { id: "flights", name: "Letovi", endpoint: "/tbw?route=airport&city=Split" }
-    ];
+// Provjera backenda
+fetch(API + "/")
+    .then(res => {
+        document.getElementById("backendStatus").innerText = "Backend: ONLINE";
+    })
+    .catch(() => {
+        document.getElementById("backendStatus").innerText = "Backend: OFFLINE";
+    });
 
-    // RENDER KARTICA
-    app.innerHTML = `
-        <div class="card-grid">
-            ${cards.map(c => `
-                <div class="card" data-endpoint="${c.endpoint}">
-                    <h3>${c.name}</h3>
-                    <p>Klikni za info</p>
-                </div>
-            `).join("")}
-        </div>
-    `;
+// Event search
+document.getElementById("searchBtn").onclick = () => {
+    const city = document.getElementById("search").value.trim();
 
-    // ---- KLIK NA KARTICE ----
-    document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", async () => {
-            const endpoint = card.getAttribute("data-endpoint");
+    if (!city) return;
 
-            try {
-                const res = await fetch(BACKEND_URL + endpoint);
-                const data = await res.json();
-                openModal(JSON.stringify(data, null, 2));
+    loadWeather(city);
+    loadTraffic(city);
+    loadSea(city);
+    loadFlights(city);
+};
 
-            } catch (err) {
-                openModal("Greška pri učitavanju!");
-            }
+// FUNCTIONS
+
+function loadWeather(city) {
+    fetch(`${API}/tbw?route=weather&city=${city}`)
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById("weather").innerHTML = `
+                <p>${city}</p>
+                <p>${d.temp}°C</p>
+                <p>${d.description}</p>
+            `;
+        })
+        .catch(() => {
+            document.getElementById("weather").innerHTML = "Greška";
         });
-    });
-});
+}
 
-// ---- MODAL ----
-function openModal(content) {
-    const modal = document.getElementById("cardModal");
-    modal.innerHTML = `
-        <div class="modal-box">
-            <pre>${content}</pre>
-            <button id="closeModal">Zatvori</button>
-        </div>
-    `;
-    modal.classList.remove("hidden");
+function loadTraffic(city) {
+    fetch(`${API}/tbw?route=traffic&city=${city}`)
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById("traffic").innerHTML = `
+                <p>Status: ${d.status}</p>
+                <p>Brzina: ${d.speed}</p>
+            `;
+        })
+        .catch(() => {
+            document.getElementById("traffic").innerHTML = "Greška";
+        });
+}
 
-    document.getElementById("closeModal").addEventListener("click", () => {
-        modal.classList.add("hidden");
-    });
+function loadSea(city) {
+    fetch(`${API}/tbw?route=sea&city=${city}`)
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById("sea").innerHTML = `
+                <p>Temp mora: ${d.sea_temp}°C</p>
+            `;
+        })
+        .catch(() => {
+            document.getElementById("sea").innerHTML = "Greška";
+        });
+}
+
+function loadFlights(city) {
+    fetch(`${API}/tbw?route=airport&city=${city}`)
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById("flights").innerHTML = `
+                <p>Letovi: ${d.status}</p>
+            `;
+        })
+        .catch(() => {
+            document.getElementById("flights").innerHTML = "Greška";
+        });
 }
