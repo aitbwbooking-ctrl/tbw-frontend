@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TBW AI PREMIUM</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- INTRO OVERLAY -->
+    <div id="introOverlay">
+        <canvas id="introCanvas"></canvas>
+        <button id="skipIntro">Preskoči</button>
+    </div>
 
     <!-- LANGUAGE -->
     <div id="langSwitcher">
@@ -23,6 +30,7 @@
         <div id="searchBar">
             <input id="globalSearch" type="text" placeholder="Pretraži (Split, apartmani...)">
             <button id="searchBtn">Traži</button>
+            <button id="searchVoiceBtn">🎤</button>
         </div>
 
         <div id="backendStatus"></div>
@@ -35,6 +43,21 @@
 
         <!-- CARDS -->
         <div id="cards">
+
+            <div class="card" id="cardNav">
+                <h3 id="navTitle"></h3>
+                <div class="cardContent" id="navContent"></div>
+            </div>
+
+            <div class="card" id="cardBooking">
+                <h3 id="bookingTitle"></h3>
+                <div class="cardContent" id="bookingContent"></div>
+            </div>
+
+            <div class="card" id="cardStreet">
+                <h3 id="streetTitle"></h3>
+                <div class="cardContent" id="streetContent"></div>
+            </div>
 
             <div class="card" id="cardWeather">
                 <h3 id="weatherTitle"></h3>
@@ -66,7 +89,6 @@
                 <h3 id="airportTitle"></h3>
                 <div class="cardContent" id="airportContent"></div>
             </div>
-
         </div>
     </div>
 
