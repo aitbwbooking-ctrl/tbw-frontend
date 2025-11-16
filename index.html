@@ -1,33 +1,39 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TBW AI PREMIUM</title>
-
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- LANGUAGE -->
     <div id="langSwitcher">
         <span id="langHR" class="active">HR</span> |
         <span id="langEN">EN</span>
     </div>
 
+    <!-- MAIN WRAPPER -->
     <div id="app">
         <h1>TBW AI PREMIUM</h1>
         <p id="heroLine"></p>
 
+        <!-- SEARCH -->
         <div id="searchBar">
-            <input id="globalSearch" type="text" placeholder="Pretraži (Split…)" />
+            <input id="globalSearch" type="text" placeholder="Pretraži (Split, apartmani...)">
             <button id="searchBtn">Traži</button>
         </div>
 
         <div id="backendStatus"></div>
         <div id="geoStatus"></div>
 
-        <div id="alertTicker"><span id="tickerContent">Učitavanje…</span></div>
+        <!-- ALERT TICKER -->
+        <div id="alertTicker">
+            <span id="tickerContent">Učitavanje upozorenja...</span>
+        </div>
 
+        <!-- CARDS -->
         <div id="cards">
 
             <div class="card" id="cardWeather">
@@ -64,6 +70,16 @@
         </div>
     </div>
 
+    <!-- MODAL -->
+    <div id="cardModal" class="hidden">
+        <div id="cardModalContent">
+            <h2 id="modalTitle"></h2>
+            <div id="modalBody"></div>
+        </div>
+        <button id="modalClose">Zatvori</button>
+    </div>
+
+    <!-- JS -->
     <script src="app.js"></script>
 
 </body>
